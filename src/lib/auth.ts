@@ -53,9 +53,18 @@ export const authService = {
       cropTypes: ['rice'],
     });
   },
-  async registerFromAadhaar(aadhaarNumber: string): Promise<User> {
-    const profile = await this.fetchAadhaarProfile(aadhaarNumber);
-    const newUser: User = { id: String(Date.now()), role: 'farmer', ...profile };
+  async registerFromAadhaar(aadhaarNumber: string, profile?: any): Promise<User> {
+    const userProfile = profile || await this.fetchAadhaarProfile(aadhaarNumber);
+    const newUser: User = { 
+      id: String(Date.now()), 
+      role: 'farmer', 
+      name: profile?.name || userProfile.name,
+      email: userProfile.email,
+      phone: profile?.maskedMobile || userProfile.phone,
+      farmLocation: profile?.address?.district || userProfile.farmLocation,
+      farmSize: userProfile.farmSize,
+      cropTypes: userProfile.cropTypes
+    };
     mockFarmers.push(newUser);
     return newUser;
   },
@@ -67,10 +76,26 @@ export const authService = {
   async login(email: string, password: string): Promise<User | null> {
     const ADMIN_EMAIL = 'admin@kerala-agri.com';
     const ADMIN_PASS = 'admin123';
+    const DEMO_FARMER_EMAIL = 'farmer@demo.com';
+    const DEMO_FARMER_PASS = 'farmer123';
+    
     if (email === ADMIN_EMAIL && password === ADMIN_PASS) {
       return { id: 'admin-1', name: 'Administrator', email: ADMIN_EMAIL, role: 'admin' };
     }
-    // Block non-admin email/password logins; farmers should use Aadhaar flow
+    
+    if (email === DEMO_FARMER_EMAIL && password === DEMO_FARMER_PASS) {
+      return { 
+        id: 'farmer-demo', 
+        name: 'Demo Farmer', 
+        email: DEMO_FARMER_EMAIL, 
+        role: 'farmer',
+        phone: '9876543210',
+        farmLocation: 'Ernakulam, Kerala',
+        farmSize: 2.5,
+        cropTypes: ['rice', 'coconut']
+      };
+    }
+    
     return null;
   },
 };

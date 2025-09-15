@@ -107,7 +107,36 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onRegisterClick
                   {isLoading ? 'Signing in...' : 'Sign In / സൈൻ ഇൻ'}
                 </Button>
 
-                {/* Farmer demo login removed */}
+                {/* Demo farmer login */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                  <p className="text-sm text-blue-800 font-medium mb-2">Demo Farmer Login:</p>
+                  <p className="text-xs text-blue-700">Email: farmer@demo.com</p>
+                  <p className="text-xs text-blue-700">Password: farmer123</p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="w-full mt-2 text-xs"
+                    onClick={() => {
+                      reset({ email: 'farmer@demo.com', password: 'farmer123' });
+                      onSubmit({ email: 'farmer@demo.com', password: 'farmer123' });
+                    }}
+                    disabled={isLoading}
+                  >
+                    Quick Demo Login
+                  </Button>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => {
+                    reset({ email: 'farmer@demo.com', password: 'farmer123' });
+                  }}
+                >
+                  Demo Farmer Login
+                </Button>
 
                 <div className="text-center">
                   <Button
