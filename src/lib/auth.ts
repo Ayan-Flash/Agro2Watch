@@ -73,29 +73,51 @@ export const authService = {
     mockFarmers.push(newUser);
     return Promise.resolve(newUser);
   },
-  async login(email: string, password: string): Promise<User | null> {
-    const ADMIN_EMAIL = 'admin@kerala-agri.com';
-    const ADMIN_PASS = 'admin123';
-    const DEMO_FARMER_EMAIL = 'farmer@demo.com';
-    const DEMO_FARMER_PASS = 'farmer123';
-    
-    if (email === ADMIN_EMAIL && password === ADMIN_PASS) {
-      return { id: 'admin-1', name: 'Administrator', email: ADMIN_EMAIL, role: 'admin' };
+  async registerWithMobilePassword(mobile: string, password: string): Promise<User> {
+    // In production, hash and store password securely server-side
+    const existing = mockFarmers.find(f => f.phone === mobile);
+    if (existing) return existing;
+    const newUser: User = {
+      id: String(Date.now()),
+      role: 'farmer',
+      name: `Farmer ${mobile.slice(-4)}`,
+      email: `farmer${mobile.slice(-4)}@agro.watch`,
+      phone: mobile,
+      farmLocation: 'Kerala',
+      farmSize: 1.0,
+      cropTypes: ['rice']
+    };
+    mockFarmers.push(newUser);
+    return newUser;
+  },
+  async loginWithMobile(mobile: string, otp: string): Promise<User | null> {
+    // Demo mobiles
+    const ADMIN_MOBILE = '9999912345';
+    const FARMER_MOBILE = '9000012345';
+    const VALID_OTP = '123456';
+
+    if (otp !== VALID_OTP) return null;
+
+    if (mobile === ADMIN_MOBILE) {
+      return { id: 'admin-1', name: 'Administrator', email: 'admin@agro.watch', role: 'admin', phone: ADMIN_MOBILE };
     }
-    
-    if (email === DEMO_FARMER_EMAIL && password === DEMO_FARMER_PASS) {
-      return { 
-        id: 'farmer-demo', 
-        name: 'Demo Farmer', 
-        email: DEMO_FARMER_EMAIL, 
+
+    if (mobile === FARMER_MOBILE) {
+      return {
+        id: 'farmer-demo',
+        name: 'Demo Farmer',
+        email: 'farmer@agro.watch',
         role: 'farmer',
-        phone: '9876543210',
+        phone: FARMER_MOBILE,
         farmLocation: 'Ernakulam, Kerala',
         farmSize: 2.5,
         cropTypes: ['rice', 'coconut']
       };
     }
-    
+
+    // fallback by searching mock farmers by phone
+    const found = mockFarmers.find(f => f.phone === mobile);
+    if (found) return found;
     return null;
   },
 };

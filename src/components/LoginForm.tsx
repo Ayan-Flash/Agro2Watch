@@ -7,32 +7,57 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from './AuthContext';
 import { authService } from '@/lib/auth';
-import { LogIn, Shield, Leaf } from 'lucide-react';
+import { LogIn, Shield, Leaf, UserPlus, Globe } from 'lucide-react';
+import { LanguageToggle } from './LanguageToggle';
+import { useLanguage } from './LanguageContext';
+import { sendMobileOtp } from '@/lib/api';
+import { auth } from '@/lib/firebase';
+import { GoogleAuthProvider, RecaptchaVerifier, signInWithPhoneNumber, signInWithPopup, type ConfirmationResult } from 'firebase/auth';
 
-interface LoginFormData {
-  email: string;
-  password: string;
-}
+interface MobileLoginData { mobile: string; otp: string; }
+interface MobileSignupData { mobile: string; password: string; }
 
 interface LoginFormProps { onSuccess: () => void; onRegisterClick: () => void; }
 
 export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onRegisterClick }) => {
   const { login } = useAuth();
+  const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [resendIn, setResendIn] = useState(0);
+  const [captchaReady, setCaptchaReady] = useState(false);
+  const [confirmation, setConfirmation] = useState<ConfirmationResult | null>(null);
 
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<LoginFormData>();
+  // Initialize invisible reCAPTCHA once
+  if (typeof window !== 'undefined' && auth && !captchaReady) {
+    try {
+      // Avoid re-init if exists
+      // @ts-ignore
+      if (!window.__recaptchaVerifier) {
+        // @ts-ignore
+        window.__recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+          size: 'invisible'
+        });
+      }
+      setCaptchaReady(true);
+    } catch {}
+  }
 
-  const onSubmit = async (data: LoginFormData) => {
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<MobileLoginData>();
+  const { register: registerSignup, handleSubmit: handleSignupSubmit, formState: { errors: signupErrors }, reset: resetSignup } = useForm<MobileSignupData>();
+  const [showSignup, setShowSignup] = useState(false);
+
+  const onSubmit = async (data: MobileLoginData) => {
     setIsLoading(true);
     setError('');
     try {
-      const user = await authService.login(data.email, data.password);
+      const user = await authService.loginWithMobile(data.mobile, data.otp);
       if (user) {
         login(user);
         onSuccess();
       } else {
-        setError('Invalid email or password');
+        setError('Invalid mobile or OTP');
       }
     } catch (error) {
       setError('Login failed. Please try again.');
@@ -52,49 +77,110 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onRegisterClick
               <Leaf className="w-6 h-6 text-white" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold text-gray-900">
-            Kerala Agri System
-          </CardTitle>
-          <p className="text-gray-600">കേരള കാർഷിക സംവിധാനം</p>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-2xl font-bold text-gray-900">
+              {t('welcomeMessage')}
+            </CardTitle>
+            <LanguageToggle />
+          </div>
+          <p className="text-gray-600">{t('subtitle')}</p>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="farmer" className="w-full">
+          <div id="recaptcha-container" style={{ display: 'none' }}></div>
+          <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="farmer" className="flex items-center gap-2">
+              <TabsTrigger value="signin" className="flex items-center gap-2">
                 <Leaf className="w-4 h-4" />
-                Farmer
+                Sign in
               </TabsTrigger>
-              <TabsTrigger value="admin" className="flex items-center gap-2">
-                <Shield className="w-4 h-4" />
-                Admin
+              <TabsTrigger value="signup" className="flex items-center gap-2">
+                <UserPlus className="w-4 h-4" />
+                Sign up
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="farmer" className="space-y-4">
+            <TabsContent value="signin" className="space-y-4">
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div>
-                  <Label htmlFor="farmer-email">Email / ഇമെയിൽ</Label>
+                  <Label htmlFor="mobile">Mobile number</Label>
                   <Input
-                    id="farmer-email"
-                    type="email"
-                    {...register('email', { required: 'Email is required' })}
-                    placeholder="farmer@example.com"
+                    id="mobile"
+                    type="tel"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    {...register('mobile', { required: 'Mobile is required', minLength: { value: 10, message: 'Enter valid number' } })}
+                    placeholder="9000012345"
                   />
-                  {errors.email && (
-                    <p className="text-sm text-red-600 mt-1">{errors.email.message}</p>
+                  {errors.mobile && (
+                    <p className="text-sm text-red-600 mt-1">{errors.mobile.message as string}</p>
                   )}
                 </div>
 
                 <div>
-                  <Label htmlFor="farmer-password">Password / പാസ്‌വേഡ്</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    disabled={isLoading || resendIn > 0}
+                    onClick={async () => {
+                      const mobile = (document.getElementById('mobile') as HTMLInputElement)?.value || '';
+                      if (!/^\d{10}$/.test(mobile)) {
+                        setError('Enter valid mobile number');
+                        return;
+                      }
+                      setIsLoading(true);
+                      setError('');
+                      try {
+                        // Prefer Firebase Phone Auth if available
+                        try {
+                          // @ts-ignore
+                          const verifier = window.__recaptchaVerifier as RecaptchaVerifier;
+                          const full = `+91${mobile}`; // default country code; adjust as needed
+                          const conf = await signInWithPhoneNumber(auth, full, verifier);
+                          setConfirmation(conf);
+                        } catch (e) {
+                          // fallback to our mock API
+                          await sendMobileOtp(mobile);
+                        }
+                        setOtpSent(true);
+                        setResendIn(30);
+                        const timer = setInterval(() => {
+                          setResendIn((s) => {
+                            if (s <= 1) { clearInterval(timer); return 0; }
+                            return s - 1;
+                          });
+                        }, 1000);
+                      } catch (e) {
+                        // Fallback in dev: mark OTP as sent for demo flow (use 123456)
+                        setOtpSent(true);
+                        setResendIn(30);
+                        const timer = setInterval(() => {
+                          setResendIn((s) => {
+                            if (s <= 1) { clearInterval(timer); return 0; }
+                            return s - 1;
+                          });
+                        }, 1000);
+                      } finally {
+                        setIsLoading(false);
+                      }
+                    }}
+                  >
+                    {resendIn > 0 ? `Resend OTP in ${resendIn}s` : 'Send OTP'}
+                  </Button>
+                </div>
+
+                <div>
+                  <Label htmlFor="otp">OTP</Label>
                   <Input
-                    id="farmer-password"
-                    type="password"
-                    {...register('password', { required: 'Password is required' })}
-                    placeholder="Enter your password"
+                    id="otp"
+                    type="tel"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    {...register('otp', { required: 'OTP is required', minLength: { value: 6, message: '6-digit OTP' }, maxLength: { value: 6, message: '6-digit OTP' } })}
+                    placeholder="123456"
                   />
-                  {errors.password && (
-                    <p className="text-sm text-red-600 mt-1">{errors.password.message}</p>
+                  {errors.otp && (
+                    <p className="text-sm text-red-600 mt-1">{errors.otp.message as string}</p>
                   )}
                 </div>
 
@@ -102,41 +188,37 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onRegisterClick
                   <p className="text-sm text-red-600 text-center">{error}</p>
                 )}
 
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  <LogIn className="w-4 h-4 mr-2" />
-                  {isLoading ? 'Signing in...' : 'Sign In / സൈൻ ഇൻ'}
-                </Button>
-
-                {/* Demo farmer login */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-                  <p className="text-sm text-blue-800 font-medium mb-2">Demo Farmer Login:</p>
-                  <p className="text-xs text-blue-700">Email: farmer@demo.com</p>
-                  <p className="text-xs text-blue-700">Password: farmer123</p>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="w-full mt-2 text-xs"
-                    onClick={() => {
-                      reset({ email: 'farmer@demo.com', password: 'farmer123' });
-                      onSubmit({ email: 'farmer@demo.com', password: 'farmer123' });
-                    }}
-                    disabled={isLoading}
-                  >
-                    Quick Demo Login
-                  </Button>
-                </div>
-
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => {
-                    reset({ email: 'farmer@demo.com', password: 'farmer123' });
+                <Button type="submit" className="w-full" disabled={isLoading}
+                  onClick={async (e) => {
+                    // If Firebase confirmation present, use it to verify OTP and sign-in
+                    if (!confirmation) return; // fall back to form submit handler
+                    e.preventDefault();
+                    const otpInput = (document.getElementById('otp') as HTMLInputElement)?.value || '';
+                    if (!/^\d{6}$/.test(otpInput)) { setError('Enter valid OTP'); return; }
+                    setIsLoading(true);
+                    setError('');
+                    try {
+                      const cred = await confirmation.confirm(otpInput);
+                      const fUser = cred.user;
+                      // Map to our app user
+                      const mapped = { id: fUser.uid, name: fUser.displayName || 'User', email: fUser.email || `${fUser.uid}@agro.watch`, role: 'farmer', phone: fUser.phoneNumber || undefined } as any;
+                      login(mapped);
+                      onSuccess();
+                    } catch (err) {
+                      setError('Invalid OTP');
+                    } finally {
+                      setIsLoading(false);
+                    }
                   }}
                 >
-                  Demo Farmer Login
+                  <LogIn className="w-4 h-4 mr-2" />
+                  {isLoading ? 'Signing in...' : 'Sign In'}
                 </Button>
+                {otpSent && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4 text-sm text-green-800">
+                    OTP sent successfully. Enter the 6-digit code. For demo, use 123456.
+                  </div>
+                )}
 
                 <div className="text-center">
                   <Button
@@ -145,37 +227,55 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onRegisterClick
                     onClick={onRegisterClick}
                     className="text-sm"
                   >
-                    New farmer? Register here / പുതിയ കൃഷിക്കാരൻ? ഇവിടെ രജിസ്റ്റർ ചെയ്യുക
+                    New farmer? Register here
                   </Button>
                 </div>
               </form>
             </TabsContent>
 
-            <TabsContent value="admin" className="space-y-4">
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <TabsContent value="signup" className="space-y-4">
+              <form
+                onSubmit={handleSignupSubmit(async (data) => {
+                  setIsLoading(true);
+                  setError('');
+                  try {
+                    const user = await authService.registerWithMobilePassword(data.mobile, data.password);
+                    if (user) {
+                      login(user);
+                      onSuccess();
+                    }
+                  } catch (e) {
+                    setError('Registration failed.');
+                  } finally {
+                    setIsLoading(false);
+                  }
+                })}
+                className="space-y-4"
+              >
                 <div>
-                  <Label htmlFor="admin-email">Admin Email</Label>
+                  <Label htmlFor="signup-mobile">Mobile number</Label>
                   <Input
-                    id="admin-email"
-                    type="email"
-                    {...register('email', { required: 'Email is required' })}
-                    placeholder="admin@kerala-agri.com"
+                    id="signup-mobile"
+                    type="tel"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    {...registerSignup('mobile', { required: 'Mobile is required', minLength: { value: 10, message: 'Enter valid number' } })}
+                    placeholder="9000012345"
                   />
-                  {errors.email && (
-                    <p className="text-sm text-red-600 mt-1">{errors.email.message}</p>
+                  {signupErrors.mobile && (
+                    <p className="text-sm text-red-600 mt-1">{signupErrors.mobile.message as string}</p>
                   )}
                 </div>
-
                 <div>
-                  <Label htmlFor="admin-password">Admin Password</Label>
+                  <Label htmlFor="signup-password">Set password (one-time)</Label>
                   <Input
-                    id="admin-password"
+                    id="signup-password"
                     type="password"
-                    {...register('password', { required: 'Password is required' })}
-                    placeholder="Enter admin password"
+                    {...registerSignup('password', { required: 'Password is required', minLength: { value: 6, message: 'Min 6 characters' } })}
+                    placeholder="Create a password"
                   />
-                  {errors.password && (
-                    <p className="text-sm text-red-600 mt-1">{errors.password.message}</p>
+                  {signupErrors.password && (
+                    <p className="text-sm text-red-600 mt-1">{signupErrors.password.message as string}</p>
                   )}
                 </div>
 
@@ -184,12 +284,28 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onRegisterClick
                 )}
 
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  <Shield className="w-4 h-4 mr-2" />
-                  {isLoading ? 'Signing in...' : 'Admin Sign In'}
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  {isLoading ? 'Processing...' : 'Sign up with phone'}
                 </Button>
-
-                {/* Admin demo login removed (use credentials) */}
               </form>
+              <div className="pt-2">
+                <Button type="button" variant="outline" className="w-full gap-2"
+                  onClick={async () => {
+                    try {
+                      const provider = new GoogleAuthProvider();
+                      const res = await signInWithPopup(auth, provider);
+                      const g = res.user;
+                      const mapped = { id: g.uid, name: g.displayName || 'User', email: g.email || `${g.uid}@agro.watch`, role: 'farmer', phone: g.phoneNumber || undefined } as any;
+                      login(mapped);
+                      onSuccess();
+                    } catch (e) {
+                      setError('Google sign-in failed');
+                    }
+                  }}
+                >
+                  <Globe className="w-4 h-4" /> Sign in with Google
+                </Button>
+              </div>
             </TabsContent>
           </Tabs>
         </CardContent>

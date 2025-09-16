@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { User, AuthState } from '@/lib/auth';
 
@@ -15,18 +15,38 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     isAuthenticated: false
   });
 
+  // Load persisted auth on first mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('agro_auth');
+      if (stored) {
+        const parsed = JSON.parse(stored) as AuthState;
+        if (parsed && parsed.user && parsed.isAuthenticated) {
+          setAuthState(parsed);
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
   const login = (user: User) => {
-    setAuthState({
-      user,
-      isAuthenticated: true
-    });
+    const nextState: AuthState = { user, isAuthenticated: true };
+    setAuthState(nextState);
+    try {
+      localStorage.setItem('agro_auth', JSON.stringify(nextState));
+    } catch {
+      // ignore
+    }
   };
 
   const logout = () => {
-    setAuthState({
-      user: null,
-      isAuthenticated: false
-    });
+    setAuthState({ user: null, isAuthenticated: false });
+    try {
+      localStorage.removeItem('agro_auth');
+    } catch {
+      // ignore
+    }
   };
 
   return (

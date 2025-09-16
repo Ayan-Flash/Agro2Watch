@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Menu, X, Globe } from 'lucide-react';
+import { Menu, X, Globe, UserCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { translations } from '@/lib/translations';
+import { translations, languageOptions } from '@/lib/translations';
 
 interface NavigationProps {
   currentPage: string;
@@ -23,7 +23,7 @@ const Navigation: React.FC<NavigationProps> = ({
   onLanguageChange,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const t = translations[language as 'en' | 'ml' | 'hi'];
+  const t = translations[language as keyof typeof translations];
 
   const menuItems = [
     { id: 'dashboard', label: t.dashboard },
@@ -31,13 +31,9 @@ const Navigation: React.FC<NavigationProps> = ({
     { id: 'soil-detection', label: t.soilDetection },
     { id: 'farmer-registration', label: t.farmerRegistration },
     { id: 'admin-dashboard', label: t.adminDashboard },
+    { id: 'profile', label: 'Profile' },
   ];
 
-  const languageOptions = [
-    { code: 'en', name: 'English', nativeName: 'English' },
-    { code: 'ml', name: 'Malayalam', nativeName: 'മലയാളം' },
-    { code: 'hi', name: 'Hindi', nativeName: 'हिंदी' },
-  ];
   const currentLanguage = languageOptions.find(lang => lang.code === language);
 
   return (
@@ -46,7 +42,7 @@ const Navigation: React.FC<NavigationProps> = ({
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <h1 className="text-xl font-bold">Kerala AgriMonitor</h1>
+              <h1 className="text-xl font-bold">AgroWatch</h1>
             </div>
           </div>
 
@@ -59,7 +55,7 @@ const Navigation: React.FC<NavigationProps> = ({
                 onClick={() => onPageChange(item.id)}
                 className="text-white hover:bg-green-700"
               >
-                {item.label}
+                {item.id === 'profile' ? <span className="flex items-center gap-2"><UserCircle className="h-4 w-4" /> {item.label}</span> : item.label}
               </Button>
             ))}
             

@@ -3,11 +3,13 @@ import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import { AlertTriangle, Bug, Droplets, Cloud } from 'lucide-react';
 import { useLanguage } from './LanguageContext';
-import { mockAlerts } from '@/lib/mockData';
+import { useQuery } from '@tanstack/react-query';
+import { fetchAlerts } from '@/lib/api';
 import { TranslationKey } from '../lib/translations';
 
 export const AlertsPanel = () => {
   const { t } = useLanguage();
+  const { data: alerts = [], isLoading } = useQuery({ queryKey: ['alerts'], queryFn: fetchAlerts });
 
   const getAlertIcon = (type: string) => {
     switch (type) {
@@ -46,7 +48,7 @@ export const AlertsPanel = () => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {mockAlerts.map((alert) => {
+        {(isLoading ? [] : alerts).map((alert) => {
           const Icon = getAlertIcon(alert.type);
           
           return (

@@ -79,7 +79,7 @@ export const FarmerRegistration: React.FC<FarmerRegistrationProps> = ({ onSucces
             {step === 'vid' ? 'Continue with Aadhaar' : 'Enter OTP'}
           </CardTitle>
           <p className="text-gray-600">
-            {step === 'vid' ? 'ആധാറിലൂടെ തുടരുക' : 'OTP നൽകുക'}
+            {step === 'vid' ? 'Continue using Aadhaar eKYC' : 'Enter the OTP sent to your mobile'}
           </p>
         </CardHeader>
         <CardContent>
@@ -145,6 +145,11 @@ export const FarmerRegistration: React.FC<FarmerRegistrationProps> = ({ onSucces
               </>
             )}
             {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
+            <div className="pt-2 text-center">
+              <Button variant="link" onClick={onSuccess} className="text-sm">
+                Already have an account? Login
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>

@@ -3,10 +3,13 @@ import { getAuth } from "firebase/auth";
 import { getFunctions, connectFunctionsEmulator } from "firebase/functions";
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "demo-key",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "demo-project.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "demo-project",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "demo-app-id",
+  apiKey: "AIzaSyCCziqCGhoe3PgvMmRKIBn43gs0Kb7XOdI",
+  authDomain: "agrowatch-3e97f.firebaseapp.com",
+  projectId: "agrowatch-3e97f",
+  storageBucket: "agrowatch-3e97f.firebasestorage.app",
+  messagingSenderId: "1002091625586",
+  appId: "1:1002091625586:web:8fee6d23e3311edc0d96eb",
+  measurementId: "G-LBP7FDSLSF"
 };
 
 export const app = initializeApp(firebaseConfig);
