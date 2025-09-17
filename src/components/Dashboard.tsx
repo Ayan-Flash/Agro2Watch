@@ -81,7 +81,7 @@ export const Dashboard: React.FC = () => {
           healthyZones: 0,
           stressedZones: 0,
           criticalZones: 0,
-          totalArea: typeof user?.farmSize === 'number' ? user.farmSize : parseFloat((user as any)?.farmSize || '0')
+          totalArea: parseFloat(String(user?.farmSize || '0'))
         };
         
         setCropData(mockCropData);

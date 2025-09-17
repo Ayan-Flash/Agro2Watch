@@ -48,6 +48,10 @@ export interface Translations {
   
   // Forms
   name: string;
+  
+  // Chatbot
+  aiAssistant: string;
+  typeMessage: string;
   email: string;
   phone: string;
   password: string;
@@ -145,6 +149,10 @@ export const translations: Record<string, Translations> = {
     
     // Forms
     name: "Name",
+    
+    // Chatbot
+    aiAssistant: "AI Assistant",
+    typeMessage: "Type your farming question...",
     email: "Email",
     phone: "Phone",
     password: "Password",
@@ -241,6 +249,10 @@ export const translations: Record<string, Translations> = {
     
     // Forms
     name: "नाम",
+    
+    // Chatbot
+    aiAssistant: "AI सहायक",
+    typeMessage: "अपना कृषि प्रश्न टाइप करें...",
     email: "ईमेल",
     phone: "फोन",
     password: "पासवर्ड",
@@ -337,6 +349,10 @@ export const translations: Record<string, Translations> = {
     
     // Forms
     name: "নাম",
+    
+    // Chatbot
+    aiAssistant: "AI সহায়ক",
+    typeMessage: "আপনার কৃষি প্রশ্ন টাইপ করুন...",
     email: "ইমেইল",
     phone: "ফোন",
     password: "পাসওয়ার্ড",
@@ -433,6 +449,10 @@ export const translations: Record<string, Translations> = {
     
     // Forms
     name: "નામ",
+    
+    // Chatbot
+    aiAssistant: "AI સહાયક",
+    typeMessage: "તમારો કૃષિ પ્રશ્ન ટાઇપ કરો...",
     email: "ઈમેઈલ",
     phone: "ફોન",
     password: "પાસવર્ડ",
@@ -529,6 +549,10 @@ export const translations: Record<string, Translations> = {
     
     // Forms
     name: "பெயர்",
+    
+    // Chatbot
+    aiAssistant: "AI உதவியாளர்",
+    typeMessage: "உங்கள் விவசாய கேள்வியை தட்டச்சு செய்யவும்...",
     email: "மின்னஞ்சல்",
     phone: "தொலைபேசி",
     password: "கடவுச்சொல்",
@@ -625,6 +649,10 @@ export const translations: Record<string, Translations> = {
     
     // Forms
     name: "పేరు",
+    
+    // Chatbot
+    aiAssistant: "AI సహాయకుడు",
+    typeMessage: "మీ వ్యవసాయ ప్రశ్నను టైప్ చేయండి...",
     email: "ఇమెయిల్",
     phone: "ఫోన్",
     password: "పాస్‌వర్డ్",
@@ -721,6 +749,10 @@ export const translations: Record<string, Translations> = {
     
     // Forms
     name: "নাম",
+    
+    // Chatbot
+    aiAssistant: "AI সহায়ক",
+    typeMessage: "আপোনাৰ কৃষি প্ৰশ্ন টাইপ কৰক...",
     email: "ইমেইল",
     phone: "ফোন",
     password: "পাছৱৰ্ড",

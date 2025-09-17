@@ -59,7 +59,7 @@ export const AlertsPanel = () => {
                   <Icon className="w-4 h-4 mt-0.5 text-gray-600" />
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <Badge variant={getSeverityColor(alert.severity)} className="text-[10px] py-0.5 px-1.5">
+                      <Badge variant={getSeverityColor(alert.severity)}>
                         {t(alert.severity as TranslationKey)}
                       </Badge>
                       <span className="text-xs text-gray-500">{alert.zone}</span>
@@ -71,10 +71,10 @@ export const AlertsPanel = () => {
               </div>
               <div className="flex gap-2 mt-2">
                 <Button size="sm" variant="outline" className="text-xs">
-                  {t('view' as TranslationKey)}
+                  {t('viewDetails')}
                 </Button>
                 <Button size="sm" variant="outline" className="text-xs">
-                  {t('submit' as TranslationKey)}
+                  {t('takeAction')}
                 </Button>
               </div>
             </div>

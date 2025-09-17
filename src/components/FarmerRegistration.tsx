@@ -44,11 +44,11 @@ export const FarmerRegistration: React.FC = () => {
   const [formData, setFormData] = useState({
     name: user?.name || '',
     phone: user?.phone || '',
-    aadhaarNumber: (user as any)?.aadhaar || (user as any)?.aadhar || '',
+    aadhaarNumber: user?.aadhar || '',
     address: '',
-    farmSize: user?.farmSize ? String(user.farmSize) : '',
+    farmSize: String(user?.farmSize || ''),
     farmUnit: 'acres',
-    cropTypes: (user as any)?.cropTypes || []
+    cropTypes: user?.cropType ? [user.cropType] : []
   });
   
   const [isAadhaarVerifying, setIsAadhaarVerifying] = useState(false);
@@ -58,10 +58,8 @@ export const FarmerRegistration: React.FC = () => {
   const [success, setSuccess] = useState('');
   const [showQRScanner, setShowQRScanner] = useState(false);
 
-  const cropOptions = [
-    'Rice', 'Wheat', 'Corn', 'Sugarcane', 'Cotton', 'Soybean', 
-    'Potato', 'Onion', 'Tomato', 'Cabbage', 'Cauliflower', 'Beans',
-    'Mango', 'Banana', 'Apple', 'Grapes', 'Orange', 'Coconut'
+  const cropOptions: ('corn' | 'vegetables' | 'both')[] = [
+    'corn', 'vegetables', 'both'
   ];
 
   const handleInputChange = (field: string, value: string) => {
@@ -69,7 +67,7 @@ export const FarmerRegistration: React.FC = () => {
     setError('');
   };
 
-  const handleCropToggle = (crop: string) => {
+  const handleCropToggle = (crop: 'corn' | 'vegetables' | 'both') => {
     setFormData(prev => ({
       ...prev,
       cropTypes: prev.cropTypes.includes(crop)

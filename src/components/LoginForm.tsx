@@ -30,8 +30,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onRegisterClick
     setIsLoading(true);
     setError('');
     try {
-      const ok = await login(data.email, data.password);
-      if (ok) {
+      const success = await login(data.email, data.password);
+      if (success) {
         onSuccess();
       } else {
         setError('Invalid email or password');

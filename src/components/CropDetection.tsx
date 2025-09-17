@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Upload, Camera, Leaf, AlertTriangle, CheckCircle, Info } from 'lucide-react';
 import { useLanguage } from './LanguageContext';
 import { useTranslation } from '@/lib/translations';
-import { analyzeCropImage, detectPlantDisease, type CropAnalysisResult, type DiseaseDetectionResult } from '../lib/backendApi';
+import { analyzeCropImage, detectPlantDisease, CropAnalysisResult, DiseaseDetectionResult } from '@/lib/backendApi';
 
 export const CropDetection: React.FC = () => {
   const { language } = useLanguage();

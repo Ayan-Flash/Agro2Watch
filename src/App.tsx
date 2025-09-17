@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AuthProvider } from './components/AuthContext';
 import { LanguageProvider } from './components/LanguageContext';
 import { useAuth } from './components/AuthContext';
@@ -9,10 +9,23 @@ import CropDetection from './components/CropDetection';
 import PestDetection from './components/PestDetection';
 import SoilDetection from './components/SoilDetection';
 import FarmerRegistration from './components/FarmerRegistration';
+import LandingPage from './components/LandingPage';
+import Profile from './components/Profile';
+import {AdminDashboard} from './components/AdminDashboard';
+import GovernmentSchemes from './components/GovermentSchemes';
 
 const AppContent: React.FC = () => {
   const { user, isLoading } = useAuth();
   const [currentView, setCurrentView] = useState('dashboard');
+  const [showLanding, setShowLanding] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      setShowLanding(false);
+    } else {
+      setShowLanding(true);
+    }
+  }, [user]);
 
   if (isLoading) {
     return (
@@ -23,7 +36,15 @@ const AppContent: React.FC = () => {
   }
 
   if (!user) {
+    if (showLanding) {
+      return <LandingPage onGetStarted={() => setShowLanding(false)} />;
+    }
     return <Login />;
+  }
+
+  // Admin Dashboard
+  if (user.role === 'admin') {
+    return <AdminDashboard />;
   }
 
   const renderCurrentView = () => {
@@ -38,6 +59,10 @@ const AppContent: React.FC = () => {
         return <SoilDetection />;
       case 'farmer-registration':
         return <FarmerRegistration />;
+      case 'government-schemes':
+        return <GovernmentSchemes />;
+      case 'profile':
+        return <Profile onLogout={() => setCurrentView('dashboard')} />;
       default:
         return <Dashboard />;
     }

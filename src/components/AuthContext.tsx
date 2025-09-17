@@ -45,11 +45,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Demo credentials (bypass UI)
-  const DEMO_FARMER_PHONE = '9000012345';
-  const DEMO_ADMIN_PHONE = '9999912345';
-  const DEMO_ADMIN_PASSWORD = 'admin123';
-
   // Check for existing session on mount
   useEffect(() => {
     const savedUser = localStorage.getItem('agrowatch_user');
@@ -77,36 +72,38 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Bypass: Admin demo (requires password)
-      if (phone === DEMO_ADMIN_PHONE && password === DEMO_ADMIN_PASSWORD) {
-        const adminUser: User = {
-          id: Date.now().toString(),
-          phone: DEMO_ADMIN_PHONE,
-          name: 'Administrator',
-          verified: true,
+      
+      // Demo accounts for testing
+      if (phone === '9000012345') {
+        // Demo farmer account - accepts any password
+        const demoFarmer: User = {
+          id: 'demo_farmer_001',
+          phone: '9000012345',
+          name: 'Demo Farmer',
+          farmSize: 5,
+          cropType: 'both',
           isProfileComplete: true,
-          joinedAt: new Date().toISOString(),
-          role: 'admin',
+          verified: true,
+          joinedAt: new Date().toISOString()
         };
-        setUser(adminUser);
+        setUser(demoFarmer);
         return true;
       }
-
-      // Bypass: Farmer demo (no password check)
-      if (phone === DEMO_FARMER_PHONE) {
-        const farmerUser: User = {
-          id: Date.now().toString(),
-          phone: DEMO_FARMER_PHONE,
-          name: 'Demo Farmer',
+      
+      if (phone === '9999912345' && password === 'admin123') {
+        // Demo admin account
+        const demoAdmin: User = {
+          id: 'demo_admin_001',
+          phone: '9999912345',
+          name: 'Demo Admin',
+          farmSize: 0,
+          cropType: 'corn',
+          isProfileComplete: true,
           verified: true,
-          isProfileComplete: false,
           joinedAt: new Date().toISOString(),
-          role: 'farmer',
-          farmSize: 2,
-          cropType: 'both',
+          role: 'admin' // Add admin role
         };
-        setUser(farmerUser);
+        setUser(demoAdmin);
         return true;
       }
       

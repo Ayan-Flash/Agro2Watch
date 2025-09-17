@@ -1,7 +1,29 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
-import { User, Phone, Calendar, MapPin, LogOut } from 'lucide-react';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Badge } from './ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { 
+  User, 
+  Phone, 
+  Calendar, 
+  MapPin, 
+  LogOut, 
+  Edit, 
+  Save, 
+  X, 
+  Shield, 
+  Award, 
+  TrendingUp,
+  Leaf,
+  Settings,
+  Bell,
+  CreditCard,
+  FileText,
+  Activity
+} from 'lucide-react';
 import { useAuth } from './AuthContext';
 import { useLanguage } from './LanguageContext';
 import { useTranslation } from '../lib/translations';
@@ -10,117 +32,305 @@ interface ProfileProps {
   onLogout: () => void;
 }
 
-export const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
+const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
   const { user, logout } = useAuth();
   const { language } = useLanguage();
   const t = useTranslation(language);
-
-  const handleLogout = () => {
-    logout();
-    onLogout();
-  };
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState({
+    name: user?.name || '',
+    aadhar: user?.aadhar || '',
+    farmSize: user?.farmSize || 0,
+    cropType: user?.cropType || 'both'
+  });
 
   if (!user) {
-    return null;
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Card>
+          <CardContent className="text-center py-8">
+            <p>Please log in to view your profile.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
+  const handleSave = () => {
+    // Update user data logic here
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setEditData({
+      name: user?.name || '',
+      aadhar: user?.aadhar || '',
+      farmSize: user?.farmSize || 0,
+      cropType: user?.cropType || 'both'
+    });
+    setIsEditing(false);
+  };
+
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Profile Dashboard</h1>
-        <p className="text-gray-600 mt-2">Manage your account settings and information</p>
-      </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-6xl mx-auto">
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="farming">Farming Data</TabsTrigger>
+            <TabsTrigger value="schemes">Schemes</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
+          </TabsList>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Profile Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <User className="h-5 w-5 mr-2" />
-              Profile Information
-            </CardTitle>
-            <CardDescription>
-              Your account details and personal information
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center space-x-3">
-              <Phone className="h-4 w-4 text-gray-400" />
-              <div>
-                <p className="text-sm font-medium text-gray-900">Phone Number</p>
-                <p className="text-sm text-gray-600">{user.phone}</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <Calendar className="h-4 w-4 text-gray-400" />
-              <div>
-                <p className="text-sm font-medium text-gray-900">Member Since</p>
-                <p className="text-sm text-gray-600">Today</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <MapPin className="h-4 w-4 text-gray-400" />
-              <div>
-                <p className="text-sm font-medium text-gray-900">Location</p>
-                <p className="text-sm text-gray-600">Not specified</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+          {/* Overview Tab */}
+          <TabsContent value="overview" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <User className="h-5 w-5" />
+                      Profile Information
+                    </CardTitle>
+                    <CardDescription>
+                      Manage your account information and preferences
+                    </CardDescription>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsEditing(!isEditing)}
+                  >
+                    {isEditing ? <X className="h-4 w-4 mr-2" /> : <Edit className="h-4 w-4 mr-2" />}
+                    {isEditing ? 'Cancel' : 'Edit'}
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid gap-6 md:grid-cols-2">
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">Full Name</Label>
+                      {isEditing ? (
+                        <Input
+                          value={editData.name}
+                          onChange={(e) => setEditData({...editData, name: e.target.value})}
+                          className="mt-1"
+                        />
+                      ) : (
+                        <p className="text-lg font-semibold">{user.name || 'Not provided'}</p>
+                      )}
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">Phone Number</Label>
+                      <p className="text-lg font-semibold">{user.phone}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">Aadhar Number</Label>
+                      {isEditing ? (
+                        <Input
+                          value={editData.aadhar}
+                          onChange={(e) => setEditData({...editData, aadhar: e.target.value})}
+                          className="mt-1"
+                        />
+                      ) : (
+                        <p className="text-lg font-semibold">{user.aadhar || 'Not provided'}</p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">Farm Size</Label>
+                      {isEditing ? (
+                        <Input
+                          type="number"
+                          value={editData.farmSize}
+                          onChange={(e) => setEditData({...editData, farmSize: parseFloat(e.target.value)})}
+                          className="mt-1"
+                        />
+                      ) : (
+                        <p className="text-lg font-semibold">{user.farmSize ? `${user.farmSize} acres` : 'Not specified'}</p>
+                      )}
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">Crop Type</Label>
+                      {isEditing ? (
+                        <select
+                          value={editData.cropType}
+                          onChange={(e) => setEditData({...editData, cropType: e.target.value as 'corn' | 'vegetables' | 'both'})}
+                          className="mt-1 w-full p-2 border rounded-md"
+                        >
+                          <option value="corn">Corn</option>
+                          <option value="vegetables">Vegetables</option>
+                          <option value="both">Both</option>
+                        </select>
+                      ) : (
+                        <p className="text-lg font-semibold capitalize">{user.cropType || 'Not specified'}</p>
+                      )}
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">Member Since</Label>
+                      <p className="text-lg font-semibold">{new Date(user.joinedAt).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                </div>
 
-        {/* Account Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Account Actions</CardTitle>
-            <CardDescription>
-              Manage your account settings and preferences
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Button variant="outline" className="w-full justify-start">
-              <User className="h-4 w-4 mr-2" />
-              Edit Profile
-            </Button>
-            <Button variant="outline" className="w-full justify-start">
-              <Phone className="h-4 w-4 mr-2" />
-              Change Phone Number
-            </Button>
-            <Button 
-              variant="destructive" 
-              className="w-full justify-start"
-              onClick={handleLogout}
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              {t.logout}
-            </Button>
-          </CardContent>
-        </Card>
+                {/* Status Badges */}
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant={user.verified ? "default" : "secondary"}>
+                    <Shield className="h-3 w-3 mr-1" />
+                    {user.verified ? 'Verified' : 'Pending Verification'}
+                  </Badge>
+                  <Badge variant={user.isProfileComplete ? "default" : "outline"}>
+                    <Award className="h-3 w-3 mr-1" />
+                    {user.isProfileComplete ? 'Profile Complete' : 'Profile Incomplete'}
+                  </Badge>
+                  <Badge variant="outline">
+                    <Activity className="h-3 w-3 mr-1" />
+                    {user.role === 'admin' ? 'Administrator' : 'Farmer'}
+                  </Badge>
+                </div>
 
-        {/* Usage Statistics */}
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle>Usage Statistics</CardTitle>
-            <CardDescription>
-              Your activity and usage patterns on AgroWatch
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="text-center p-4 bg-green-50 rounded-lg">
-                <p className="text-2xl font-bold text-green-600">0</p>
-                <p className="text-sm text-gray-600">Crop Analyses</p>
-              </div>
-              <div className="text-center p-4 bg-blue-50 rounded-lg">
-                <p className="text-2xl font-bold text-blue-600">0</p>
-                <p className="text-sm text-gray-600">Soil Tests</p>
-              </div>
-              <div className="text-center p-4 bg-orange-50 rounded-lg">
-                <p className="text-2xl font-bold text-orange-600">0</p>
-                <p className="text-sm text-gray-600">Alerts Received</p>
-              </div>
+                {/* Action Buttons */}
+                {isEditing && (
+                  <div className="flex gap-4 pt-4">
+                    <Button onClick={handleSave} className="flex-1">
+                      <Save className="h-4 w-4 mr-2" />
+                      Save Changes
+                    </Button>
+                    <Button variant="outline" onClick={handleCancel} className="flex-1">
+                      <X className="h-4 w-4 mr-2" />
+                      Cancel
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Farming Data Tab */}
+          <TabsContent value="farming" className="space-y-6">
+            <div className="grid gap-6 md:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Leaf className="h-5 w-5" />
+                    Farm Statistics
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex justify-between">
+                      <span>Total Farm Area</span>
+                      <span className="font-semibold">{user.farmSize || 0} acres</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Crop Types</span>
+                      <span className="font-semibold capitalize">{user.cropType || 'Not specified'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Analysis Count</span>
+                      <span className="font-semibold">0</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5" />
+                    Recent Activity
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Activity className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No recent activity</p>
+                    <p className="text-sm mt-2">Start analyzing your crops to see activity here</p>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-          </CardContent>
-        </Card>
+          </TabsContent>
+
+          {/* Schemes Tab */}
+          <TabsContent value="schemes" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Award className="h-5 w-5" />
+                  Applied Schemes
+                </CardTitle>
+                <CardDescription>
+                  Track your government scheme applications and benefits
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8 text-muted-foreground">
+                  <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No scheme applications yet</p>
+                  <p className="text-sm mt-2">Browse available schemes to get started</p>
+                  <Button className="mt-4" onClick={() => window.location.hash = '#government-schemes'}>
+                    Browse Schemes
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Settings Tab */}
+          <TabsContent value="settings" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="h-5 w-5" />
+                  Account Settings
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium">Notifications</h4>
+                      <p className="text-sm text-muted-foreground">Receive alerts about your crops and schemes</p>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      <Bell className="h-4 w-4 mr-2" />
+                      Configure
+                    </Button>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium">Privacy</h4>
+                      <p className="text-sm text-muted-foreground">Manage your data and privacy settings</p>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      <Shield className="h-4 w-4 mr-2" />
+                      Manage
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t">
+                  <Button 
+                    variant="destructive" 
+                    onClick={() => {
+                      logout();
+                      onLogout();
+                    }}
+                    className="w-full"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
