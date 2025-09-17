@@ -801,13 +801,13 @@ export const translations: Record<string, Translations> = {
 };
 
 export const languageOptions = [
-  { code: 'en', name: 'English', nativeName: 'English' },
-  { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी' },
-  { code: 'bn', name: 'Bengali', nativeName: 'বাংলা' },
-  { code: 'gu', name: 'Gujarati', nativeName: 'ગુજરાતી' },
-  { code: 'ta', name: 'Tamil', nativeName: 'தமிழ்' },
-  { code: 'te', name: 'Telugu', nativeName: 'తెలుగు' },
-  { code: 'as', name: 'Assamese', nativeName: 'অসমীয়া' },
+  { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸' },
+  { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी', flag: '🇮🇳' },
+  { code: 'bn', name: 'Bengali', nativeName: 'বাংলা', flag: '🇧🇩' },
+  { code: 'gu', name: 'Gujarati', nativeName: 'ગુજરાતી', flag: '🇮🇳' },
+  { code: 'ta', name: 'Tamil', nativeName: 'தமிழ்', flag: '🇮🇳' },
+  { code: 'te', name: 'Telugu', nativeName: 'తెలుగు', flag: '🇮🇳' },
+  { code: 'as', name: 'Assamese', nativeName: 'অসমীয়া', flag: '🇮🇳' },
 ];
 
 export type Language = keyof typeof translations;
@@ -817,8 +817,17 @@ export const useTranslation = (language: string): Translations => {
   return translations[language] || translations.en;
 };
 
-export const t = (key: TranslationKey, language: string = 'en'): string => {
-  const translation: Record<string, string> = (translations as any)[language] || translations.en;
-  const fallback: Record<string, string> = translations.en as any;
-  return translation[key] || fallback[key] || key;
+// Get translation function
+export const getTranslation = (language: string, key: string): string => {
+  const t = useTranslation(language);
+  const keys = key.split('.');
+  let value: any = t;
+  
+  for (const k of keys) {
+    value = value?.[k];
+  }
+  
+  return value || key;
 };
+
+export default translations;
