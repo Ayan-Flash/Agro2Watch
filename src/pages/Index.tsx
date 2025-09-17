@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LanguageProvider, useLanguage } from '@/components/LanguageContext';
+import { LanguageProvider } from '@/components/LanguageContext';
 import { AuthProvider, useAuth } from '@/components/AuthContext';
 import { LoginForm } from '@/components/LoginForm';
 import { FarmerRegistration } from '@/components/FarmerRegistration';
@@ -11,56 +11,23 @@ import { EnvironmentalPanel } from '@/components/EnvironmentalPanel';
 import { AlertsPanel } from '@/components/AlertsPanel';
 import { TrendsChart } from '@/components/TrendsChart';
 import Navigation from '@/components/Navigation';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { LogIn } from 'lucide-react';
-import { Profile } from '@/components/Profile';
 
 const AppContent = () => {
   const { isAuthenticated, user } = useAuth();
   const [showRegistration, setShowRegistration] = useState(false);
-  const [showLogin, setShowLogin] = useState(false);
   const [currentPage, setCurrentPage] = useState('dashboard');
 
   if (!isAuthenticated) {
     if (showRegistration) {
-      return (
-        <FarmerRegistration 
-          onSuccess={() => setShowRegistration(false)}
-        />
-      );
+      return <FarmerRegistration />;
     }
-    if (showLogin) {
-      return (
-        <LoginForm
-          onSuccess={() => setShowLogin(false)}
-          onRegisterClick={() => setShowRegistration(true)}
-        />
-      );
-    }
-    // Public landing: show dashboard with Get Started CTA
     return (
-      <div className="relative">
-        <Dashboard />
-        <div className="fixed bottom-6 right-6 z-50">
-          <Card className="shadow-xl">
-            <CardContent className="p-4 flex items-center gap-3">
-              <Button onClick={() => setShowLogin(true)} className="gap-2">
-                <LogIn className="w-4 h-4" />
-                Get started
-              </Button>
-              <Button variant="outline" onClick={() => setShowRegistration(true)}>
-                Register
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+      <LoginForm onSuccess={() => {}} onRegisterClick={() => setShowRegistration(true)} />
     );
   }
 
   // Admin Dashboard
-  if (user?.role === 'admin') {
+  if ((user as any)?.role === 'admin') {
     return <AdminDashboard />;
   }
 
@@ -69,14 +36,6 @@ const AppContent = () => {
     switch (currentPage) {
       case 'dashboard':
         return <Dashboard />;
-      case 'profile':
-        return (
-          <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-indigo-50">
-            <div className="container mx-auto px-4 py-6">
-              <Profile />
-            </div>
-          </div>
-        );
       case 'crop-detection':
         return (
           <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-indigo-50">
@@ -128,15 +87,9 @@ const AppContent = () => {
     }
   };
 
-  const { language, setLanguage } = useLanguage();
   return (
     <div>
-      <Navigation
-        currentPage={currentPage}
-        onPageChange={setCurrentPage}
-        language={language}
-        onLanguageChange={setLanguage}
-      />
+      <Navigation currentView={currentPage} onViewChange={setCurrentPage} />
       {renderPage()}
     </div>
   );

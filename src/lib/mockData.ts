@@ -1,48 +1,51 @@
-export const mockFieldZones = [
-  { id: 'z1', name: 'Zone A', ndvi: 0.78, area: 0.5, health: 'healthy' },
-  { id: 'z2', name: 'Zone B', ndvi: 0.62, area: 0.7, health: 'stressed' },
-  { id: 'z3', name: 'Zone C', ndvi: 0.45, area: 0.4, health: 'critical' },
-];
-
 export const mockEnvironmentalData = {
-  soilMoisture: 56,
-  airTemperature: 28,
-  humidity: 72,
-  leafWetness: 35,
-  lastUpdated: 'Just now',
+  soilMoisture: 65,
+  airTemperature: 28.5,
+  humidity: 78,
+  leafWetness: 45,
+  lastUpdated: new Date().toLocaleString()
 };
 
-export const mockTrendData = Array.from({ length: 7 }).map((_, i) => ({
-  date: `Day ${i + 1}`,
-  ndvi: Math.random(),
-  soilMoisture: Math.round(40 + Math.random() * 20),
-}));
+export const mockFieldZones = [
+  { id: 1, name: "Zone A", health: "healthy", area: 2.5, ndvi: 0.8 },
+  { id: 2, name: "Zone B", health: "stressed", area: 1.8, ndvi: 0.6 },
+  { id: 3, name: "Zone C", health: "healthy", area: 3.2, ndvi: 0.85 },
+  { id: 4, name: "Zone D", health: "critical", area: 1.2, ndvi: 0.4 }
+];
 
 export const mockAlerts = [
   {
-    id: 'a1',
-    type: 'pestRisk',
-    severity: 'high',
-    zone: 'Zone A',
-    message: 'High probability of pest infestation detected.',
-    timestamp: '2 min ago',
+    id: 1,
+    type: "pestRisk",
+    severity: "high",
+    message: "High pest activity detected in Zone B",
+    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toLocaleString(),
+    zone: "Zone B"
   },
   {
-    id: 'a2',
-    type: 'irrigationNeeded',
-    severity: 'medium',
-    zone: 'Zone B',
-    message: 'Soil moisture below optimal range.',
-    timestamp: '10 min ago',
+    id: 2,
+    type: "diseaseRisk",
+    severity: "medium",
+    message: "Potential fungal infection risk due to high humidity",
+    timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toLocaleString(),
+    zone: "Zone D"
   },
   {
-    id: 'a3',
-    type: 'weatherAlert',
-    severity: 'low',
-    zone: 'Zone C',
-    message: 'Light rainfall expected in next 24 hours.',
-    timestamp: '30 min ago',
-  },
+    id: 3,
+    type: "irrigationNeeded",
+    severity: "low",
+    message: "Soil moisture dropping in Zone A",
+    timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toLocaleString(),
+    zone: "Zone A"
+  }
 ];
 
-
+export const mockTrendData = [
+  { date: "Mon", ndvi: 0.75, soilMoisture: 70, temperature: 27 },
+  { date: "Tue", ndvi: 0.78, soilMoisture: 68, temperature: 28 },
+  { date: "Wed", ndvi: 0.72, soilMoisture: 65, temperature: 29 },
+  { date: "Thu", ndvi: 0.76, soilMoisture: 67, temperature: 28.5 },
+  { date: "Fri", ndvi: 0.79, soilMoisture: 69, temperature: 27.5 },
+  { date: "Sat", ndvi: 0.81, soilMoisture: 71, temperature: 26 },
+  { date: "Sun", ndvi: 0.83, soilMoisture: 73, temperature: 25.5 }
+];

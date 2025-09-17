@@ -1,19 +1,17 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Thermometer, Droplets, Wind, Leaf, Cloud } from 'lucide-react';
+import { Thermometer, Droplets, Wind, Leaf } from 'lucide-react';
 import { useLanguage } from './LanguageContext';
-import { useQuery } from '@tanstack/react-query';
-import { fetchEnvironmental } from '@/lib/api';
+import { mockEnvironmentalData } from '@/lib/mockData';
 
 export const EnvironmentalPanel = () => {
   const { t } = useLanguage();
-  const { data, isLoading } = useQuery({ queryKey: ['environmental'], queryFn: () => fetchEnvironmental() });
 
   const sensors = [
     {
       icon: Droplets,
       label: t('soilMoisture'),
-      value: data?.soilMoisture ?? 0,
+      value: mockEnvironmentalData.soilMoisture,
       unit: t('percentage'),
       color: 'bg-blue-500',
       optimal: [40, 80]
@@ -21,31 +19,23 @@ export const EnvironmentalPanel = () => {
     {
       icon: Thermometer,
       label: t('airTemperature'),
-      value: data?.airTemperature ?? 0,
+      value: mockEnvironmentalData.airTemperature,
       unit: t('celsius'),
       color: 'bg-orange-500',
       optimal: [20, 35]
     },
     {
       icon: Wind,
-      label: 'Wind Speed',
-      value: data?.windSpeed ?? 0,
-      unit: 'km/h',
-      color: 'bg-cyan-500',
-      optimal: [0, 30]
-    },
-    {
-      icon: Cloud,
-      label: 'Rain Probability',
-      value: data?.rainChance ?? 0,
+      label: t('humidity'),
+      value: mockEnvironmentalData.humidity,
       unit: t('percentage'),
-      color: 'bg-indigo-500',
-      optimal: [0, 50]
+      color: 'bg-cyan-500',
+      optimal: [50, 85]
     },
     {
       icon: Leaf,
       label: t('leafWetness'),
-      value: data?.leafWetness ?? 0,
+      value: mockEnvironmentalData.leafWetness,
       unit: t('percentage'),
       color: 'bg-green-500',
       optimal: [0, 60]
@@ -67,19 +57,15 @@ export const EnvironmentalPanel = () => {
           {t('environmental')}
         </CardTitle>
         <p className="text-sm text-gray-500">
-          {t('lastUpdated')}: {isLoading ? t('loading') : (data?.lastUpdated || '-')}
+          {t('lastUpdated')}: {mockEnvironmentalData.lastUpdated}
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
         {sensors.map((sensor, index) => {
           const Icon = sensor.icon;
-          const isTemp = sensor.label.toLowerCase().includes('temperature');
-          const isWind = sensor.label.toLowerCase().includes('wind');
-          const progressValue = isTemp
-            ? Math.min(100, (sensor.value / 50) * 100)
-            : isWind
-              ? Math.min(100, (sensor.value / 60) * 100)
-              : sensor.value;
+          const progressValue = sensor.label.includes('Temperature') 
+            ? (sensor.value / 50) * 100 
+            : sensor.value;
           
           return (
             <div key={index} className="space-y-2">

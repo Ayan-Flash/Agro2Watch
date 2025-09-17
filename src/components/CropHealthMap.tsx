@@ -1,13 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useLanguage } from './LanguageContext';
-import { useQuery } from '@tanstack/react-query';
-import { fetchFieldZones } from '@/lib/api';
+import { mockFieldZones } from '@/lib/mockData';
 import { TranslationKey } from '@/lib/translations';
 
 export const CropHealthMap = () => {
   const { t } = useLanguage();
-  const { data: zones = [], isLoading } = useQuery({ queryKey: ['fieldZones'], queryFn: fetchFieldZones });
 
   const getHealthColor = (health: string) => {
     switch (health) {
@@ -37,7 +35,7 @@ export const CropHealthMap = () => {
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 gap-4">
-          {(isLoading ? [] : zones).map((zone) => (
+          {mockFieldZones.map((zone) => (
             <div
               key={zone.id}
               className="relative p-4 rounded-lg border-2 border-dashed border-gray-200 hover:border-gray-300 transition-colors"

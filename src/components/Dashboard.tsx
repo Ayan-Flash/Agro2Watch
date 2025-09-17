@@ -1,122 +1,300 @@
-import { Card, CardContent } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Leaf, Users, MapPin, Clock } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { 
+  Leaf, 
+  Thermometer, 
+  Droplets, 
+  Sun, 
+  Wind,
+  AlertTriangle,
+  TrendingUp,
+  Activity,
+  MapPin
+} from 'lucide-react';
 import { useLanguage } from './LanguageContext';
-import { CropHealthMap } from './CropHealthMap';
-import { EnvironmentalPanel } from './EnvironmentalPanel';
-import { AlertsPanel } from './AlertsPanel';
-import { TrendsChart } from './TrendsChart';
-import { LanguageToggle } from './LanguageToggle';
-import { MobileNav } from './MobileNav';
+import { useAuth } from './AuthContext';
+import { useTranslation } from '@/lib/translations';
 
-export const Dashboard = () => {
-  const { t } = useLanguage();
+interface WeatherData {
+  temperature: number;
+  humidity: number;
+  windSpeed: number;
+  description: string;
+  location: string;
+}
 
-  const stats = [
-    {
-      icon: MapPin,
-      label: 'Total Area',
-      value: '8.7',
-      unit: t('hectares'),
-      color: 'text-blue-600'
-    },
-    {
-      icon: Leaf,
-      label: t('healthyZones'),
-      value: '75',
-      unit: '%',
-      color: 'text-green-600'
-    },
-    {
-      icon: Users,
-      label: 'Active Sensors',
-      value: '12',
-      unit: 'devices',
-      color: 'text-purple-600'
-    },
-    {
-      icon: Clock,
-      label: 'Last Sync',
-      value: '2',
-      unit: 'min ago',
-      color: 'text-orange-600'
-    }
-  ];
+interface CropData {
+  healthyZones: number;
+  stressedZones: number;
+  criticalZones: number;
+  totalArea: number;
+}
+
+export const Dashboard: React.FC = () => {
+  const { language } = useLanguage();
+  const { user } = useAuth();
+  const t = useTranslation(language);
+  const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
+  const [cropData, setCropData] = useState<CropData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch real weather data
+  useEffect(() => {
+    const fetchWeatherData = async () => {
+      try {
+        // Replace with your actual weather API key and endpoint
+        const API_KEY = 'your_openweather_api_key';
+        const city = 'Kochi,IN'; // Default to Kerala
+        
+        // For demo purposes, using mock data
+        // const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric`);
+        
+        // Mock weather data for demo
+        const mockWeatherData: WeatherData = {
+          temperature: 28,
+          humidity: 75,
+          windSpeed: 12,
+          description: 'Partly Cloudy',
+          location: 'Kochi, Kerala'
+        };
+        
+        setWeatherData(mockWeatherData);
+      } catch (error) {
+        console.error('Error fetching weather data:', error);
+        // Fallback data
+        setWeatherData({
+          temperature: 25,
+          humidity: 70,
+          windSpeed: 10,
+          description: 'Data unavailable',
+          location: 'Kerala'
+        });
+      }
+    };
+
+    const fetchCropData = async () => {
+      try {
+        // Mock crop data - replace with actual API
+        const mockCropData: CropData = {
+          healthyZones: 0,
+          stressedZones: 0,
+          criticalZones: 0,
+          totalArea: typeof user?.farmSize === 'number' ? user.farmSize : parseFloat((user as any)?.farmSize || '0')
+        };
+        
+        setCropData(mockCropData);
+      } catch (error) {
+        console.error('Error fetching crop data:', error);
+      }
+    };
+
+    fetchWeatherData();
+    fetchCropData();
+    setLoading(false);
+  }, [user]);
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i} className="animate-pulse">
+              <CardContent className="p-6">
+                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-indigo-50">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <MobileNav />
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-blue-600 rounded-lg flex items-center justify-center">
-                  <Leaf className="w-5 h-5 text-white" />
+    <div className="container mx-auto px-4 py-8">
+      {/* Welcome Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          {t.welcomeMessage}
+        </h1>
+        <p className="text-gray-600">
+          Welcome back, {user?.name || user?.phone}! Here's your farm overview for today.
+        </p>
+      </div>
+
+      {/* Weather Cards */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">{t.temperature}</CardTitle>
+            <Thermometer className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {weatherData?.temperature || '--'}°C
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {weatherData?.description || 'Loading...'}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">{t.humidity}</CardTitle>
+            <Droplets className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {weatherData?.humidity || '--'}%
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Relative humidity
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Wind Speed</CardTitle>
+            <Wind className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {weatherData?.windSpeed || '--'} km/h
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Current wind speed
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Location</CardTitle>
+            <MapPin className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-lg font-bold">
+              {weatherData?.location || 'Kerala'}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Current location
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Crop Health Overview */}
+      <div className="grid gap-6 md:grid-cols-2 mb-8">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Leaf className="h-5 w-5" />
+              {t.cropHealthOverview}
+            </CardTitle>
+            <CardDescription>
+              Monitor your crop health status across different zones
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {cropData?.totalArea ? (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">Total Farm Area</span>
+                  <span className="font-medium">{cropData.totalArea} acres</span>
                 </div>
-                <div>
-                  <h1 className="text-xl font-bold text-gray-900">{t('welcomeMessage')}</h1>
-                  <p className="text-sm text-gray-600 hidden sm:block">{t('subtitle')}</p>
+                <div className="text-center py-8 text-muted-foreground">
+                  <Activity className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No crop monitoring data available yet.</p>
+                  <Button 
+                    className="mt-4" 
+                    onClick={() => window.location.hash = '#crop-detection'}
+                  >
+                    Start Crop Analysis
+                  </Button>
                 </div>
               </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <Leaf className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>Complete your profile to see crop health data.</p>
+                <Button 
+                  className="mt-4" 
+                  onClick={() => window.location.hash = '#farmer-registration'}
+                >
+                  Complete Profile
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5" />
+              {t.recentAlerts}
+            </CardTitle>
+            <CardDescription>
+              Latest notifications and recommendations
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-8 text-muted-foreground">
+              <AlertTriangle className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>No alerts at the moment.</p>
+              <p className="text-sm mt-2">
+                Your crops are looking good! Continue monitoring for best results.
+              </p>
             </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Quick Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Quick Actions</CardTitle>
+          <CardDescription>
+            Get started with crop monitoring and analysis
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-3">
+            <Button 
+              className="h-20 flex-col gap-2"
+              onClick={() => window.location.hash = '#crop-detection'}
+            >
+              <Leaf className="h-6 w-6" />
+              Analyze Crops
+            </Button>
             
-            <div className="flex items-center gap-3">
-              <Badge variant="outline" className="hidden sm:flex">
-                <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
-                Live Data
-              </Badge>
-              <LanguageToggle />
-            </div>
+            <Button 
+              variant="outline" 
+              className="h-20 flex-col gap-2"
+              onClick={() => window.location.hash = '#soil-detection'}
+            >
+              <Activity className="h-6 w-6" />
+              Test Soil
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              className="h-20 flex-col gap-2"
+              onClick={() => window.location.hash = '#farmer-registration'}
+            >
+              <TrendingUp className="h-6 w-6" />
+              Update Profile
+            </Button>
           </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-6">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          {stats.map((stat, index) => {
-            const Icon = stat.icon;
-            return (
-              <Card key={index} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <Icon className={`w-5 h-5 ${stat.color}`} />
-                    <div>
-                      <p className="text-sm text-gray-600">{stat.label}</p>
-                      <p className="text-lg font-bold">
-                        {stat.value} <span className="text-sm font-normal text-gray-500">{stat.unit}</span>
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-
-        {/* Main Dashboard Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Crop Health Map - Takes 2 columns on large screens */}
-          <CropHealthMap />
-          
-          {/* Environmental Panel */}
-          <EnvironmentalPanel />
-          
-          {/* Trends Chart - Takes 2 columns on large screens */}
-          <TrendsChart />
-          
-          {/* Alerts Panel */}
-          <AlertsPanel />
-        </div>
-
-        {/* Footer */}
-        <footer className="mt-12 text-center text-sm text-gray-500">
-          <p>AgroWatch • Powered by AI & Remote Sensing</p>
-        </footer>
-      </main>
+        </CardContent>
+      </Card>
     </div>
   );
 };
+
+// Add default export
+export default Dashboard;

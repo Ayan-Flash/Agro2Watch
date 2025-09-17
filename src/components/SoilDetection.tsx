@@ -1,301 +1,343 @@
-import { useState, useRef } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Upload, Mountain, Beaker, Droplets, Thermometer } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { 
+  Activity, 
+  Upload, 
+  Camera, 
+  AlertTriangle, 
+  CheckCircle, 
+  Loader2,
+  Droplets,
+  Zap,
+  FileImage,
+  TestTube
+} from 'lucide-react';
 import { useLanguage } from './LanguageContext';
+import { useTranslation } from '@/lib/translations';
 
-interface SoilAnalysis {
-  soilType: string;
+interface SoilAnalysisResult {
   ph: number;
   moisture: number;
   nitrogen: number;
   phosphorus: number;
   potassium: number;
   organicMatter: number;
-  fertility: 'low' | 'medium' | 'high';
   recommendations: string[];
+  healthScore: number;
 }
 
-export const SoilDetection = () => {
-  const { t } = useLanguage();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+export const SoilDetection: React.FC = () => {
+  const { language } = useLanguage();
+  const t = useTranslation(language);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [results, setResults] = useState<SoilAnalysis | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<SoilAnalysisResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const mockSoilAnalysis = (): SoilAnalysis => {
-    const soilTypes = ['Laterite Soil', 'Alluvial Soil', 'Red Soil', 'Black Soil', 'Coastal Soil'];
-    const recommendations = [
-      'Add organic compost to improve soil structure',
-      'Apply lime to adjust pH levels',
-      'Increase nitrogen fertilizer application',
-      'Improve drainage to prevent waterlogging',
-      'Add phosphorus-rich fertilizers',
-      'Use potassium supplements for better crop yield',
-      'Implement crop rotation practices'
-    ];
-
-    return {
-      soilType: soilTypes[Math.floor(Math.random() * soilTypes.length)],
-      ph: Math.round((Math.random() * 4 + 4) * 10) / 10, // 4.0 - 8.0
-      moisture: Math.floor(Math.random() * 40) + 30, // 30-70%
-      nitrogen: Math.floor(Math.random() * 50) + 20, // 20-70 ppm
-      phosphorus: Math.floor(Math.random() * 30) + 10, // 10-40 ppm
-      potassium: Math.floor(Math.random() * 100) + 50, // 50-150 ppm
-      organicMatter: Math.round((Math.random() * 3 + 1) * 10) / 10, // 1.0-4.0%
-      fertility: Math.random() > 0.6 ? 'high' : Math.random() > 0.3 ? 'medium' : 'low',
-      recommendations: recommendations.slice(0, Math.floor(Math.random() * 3) + 2)
-    };
-  };
-
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      setSelectedImage(file);
+      setError(null);
+      setAnalysisResult(null);
+      
+      // Create preview
       const reader = new FileReader();
       reader.onload = (e) => {
-        setSelectedImage(e.target?.result as string);
-        setResults(null);
+        setImagePreview(e.target?.result as string);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const analyzeSoil = async () => {
-    if (!selectedImage) return;
-    
+  const handleAnalyze = async () => {
+    if (!selectedImage) {
+      setError('Please select an image first');
+      return;
+    }
+
     setIsAnalyzing(true);
-    // Simulate AI processing time
-    await new Promise(resolve => setTimeout(resolve, 4000));
-    
-    const result = mockSoilAnalysis();
-    setResults(result);
-    setIsAnalyzing(false);
-  };
+    setError(null);
 
-  const getFertilityColor = (fertility: string) => {
-    switch (fertility) {
-      case 'high': return 'text-green-600 bg-green-50';
-      case 'medium': return 'text-yellow-600 bg-yellow-50';
-      case 'low': return 'text-red-600 bg-red-50';
-      default: return 'text-gray-600 bg-gray-50';
+    try {
+      // Simulate API call to backend
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      // Mock analysis result
+      const mockResult: SoilAnalysisResult = {
+        ph: 6.8,
+        moisture: 45,
+        nitrogen: 78,
+        phosphorus: 65,
+        potassium: 82,
+        organicMatter: 3.2,
+        healthScore: 85,
+        recommendations: [
+          'Soil pH is optimal for most crops (6.5-7.0)',
+          'Moisture level is good for plant growth',
+          'Consider adding organic compost to improve soil structure',
+          'Phosphorus levels could be increased for better root development',
+          'Regular soil testing recommended every 6 months'
+        ]
+      };
+
+      setAnalysisResult(mockResult);
+    } catch (err) {
+      setError('Failed to analyze soil. Please try again.');
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
-  const getParameterStatus = (value: number, min: number, max: number) => {
-    if (value >= min && value <= max) return 'optimal';
-    if (value < min) return 'low';
-    return 'high';
+  const getNutrientColor = (value: number) => {
+    if (value >= 80) return 'text-green-600 bg-green-50';
+    if (value >= 60) return 'text-yellow-600 bg-yellow-50';
+    return 'text-red-600 bg-red-50';
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'optimal': return 'text-green-600';
-      case 'low': return 'text-red-600';
-      case 'high': return 'text-orange-600';
-      default: return 'text-gray-600';
-    }
+  const getHealthScoreColor = (score: number) => {
+    if (score >= 80) return 'text-green-600';
+    if (score >= 60) return 'text-yellow-600';
+    return 'text-red-600';
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3 mb-6">
-        <Mountain className="w-6 h-6 text-brown-600" />
-        <h2 className="text-2xl font-bold">Soil Analysis & Testing</h2>
-        <Badge variant="outline">Spectral Analysis</Badge>
+    <div className="container mx-auto px-4 py-8 animate-in fade-in duration-500">
+      <div className="mb-8 animate-in slide-in-from-top duration-300">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+          <Activity className="h-8 w-8 text-blue-600" />
+          {t.soilHealthAnalysis}
+        </h1>
+        <p className="text-gray-600">
+          Upload an image of your soil to analyze its health and nutrient content
+        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Image Upload Section */}
-        <Card>
+        {/* Upload Section */}
+        <Card className="animate-in slide-in-from-left duration-500">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Upload className="w-5 h-5" />
-              Upload Soil Sample Image
+              <Upload className="h-5 w-5" />
+              {t.uploadImage}
             </CardTitle>
+            <CardDescription>
+              Take a clear photo of your soil sample for analysis
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div
-              className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-gray-400 transition-colors"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              {selectedImage ? (
-                <img
-                  src={selectedImage}
-                  alt="Selected soil sample"
-                  className="max-w-full max-h-64 mx-auto rounded-lg"
-                />
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
+              {imagePreview ? (
+                <div className="space-y-4">
+                  <img
+                    src={imagePreview}
+                    alt="Selected soil sample"
+                    className="mx-auto max-h-64 rounded-lg shadow-md"
+                  />
+                  <p className="text-sm text-gray-600">{selectedImage?.name}</p>
+                </div>
               ) : (
                 <div className="space-y-4">
-                  <Mountain className="w-12 h-12 text-gray-400 mx-auto" />
+                  <Camera className="mx-auto h-12 w-12 text-gray-400" />
                   <div>
-                    <p className="text-lg font-medium">Click to upload soil image</p>
-                    <p className="text-sm text-gray-500">മണ്ണിന്റെ ചിത്രം അപ്‌ലോഡ് ചെയ്യാൻ ക്ലിക്ക് ചെയ്യുക</p>
+                    <p className="text-lg font-medium text-gray-900">Upload soil image</p>
+                    <p className="text-sm text-gray-600">PNG, JPG up to 10MB</p>
                   </div>
                 </div>
               )}
-            </div>
-            
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
-              className="hidden"
-            />
-
-            <div className="flex gap-2">
-              <Button
-                onClick={analyzeSoil}
-                disabled={!selectedImage || isAnalyzing}
-                className="flex-1"
+              
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageSelect}
+                className="hidden"
+                id="image-upload"
+              />
+              <label
+                htmlFor="image-upload"
+                className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 cursor-pointer transition-colors"
               >
-                <Beaker className="w-4 h-4 mr-2" />
-                {isAnalyzing ? 'Analyzing Soil...' : 'Analyze Soil'}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <Upload className="w-4 h-4" />
-              </Button>
+                <FileImage className="h-4 w-4 mr-2" />
+                Select Image
+              </label>
             </div>
 
-            {isAnalyzing && (
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Processing soil sample...</span>
-                  <span>Spectral analysis in progress</span>
-                </div>
-                <Progress value={75} className="h-2" />
-              </div>
+            {error && (
+              <Alert className="border-red-200 bg-red-50">
+                <AlertTriangle className="h-4 w-4 text-red-600" />
+                <AlertDescription className="text-red-800">
+                  {error}
+                </AlertDescription>
+              </Alert>
             )}
+
+            <Button
+              onClick={handleAnalyze}
+              disabled={!selectedImage || isAnalyzing}
+              className="w-full bg-blue-600 hover:bg-blue-700"
+            >
+              {isAnalyzing ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Analyzing...
+                </>
+              ) : (
+                <>
+                  <TestTube className="h-4 w-4 mr-2" />
+                  Analyze Soil
+                </>
+              )}
+            </Button>
           </CardContent>
         </Card>
 
         {/* Results Section */}
-        <Card>
+        <Card className="animate-in slide-in-from-right duration-500">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Beaker className="w-5 h-5" />
-              Soil Analysis Results
+              <Zap className="h-5 w-5" />
+              Analysis Results
             </CardTitle>
+            <CardDescription>
+              Soil health assessment and nutrient analysis
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            {results ? (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-3 rounded-lg bg-blue-50">
-                    <p className="font-semibold">Soil Type</p>
-                    <p className="text-lg">{results.soilType}</p>
+            {analysisResult ? (
+              <div className="space-y-6 animate-in fade-in duration-300">
+                {/* Overall Health Score */}
+                <div className="text-center p-4 bg-gray-50 rounded-lg">
+                  <h3 className="text-lg font-semibold mb-2">Soil Health Score</h3>
+                  <div className={`text-4xl font-bold ${getHealthScoreColor(analysisResult.healthScore)}`}>
+                    {analysisResult.healthScore}/100
                   </div>
-                  <div className={`p-3 rounded-lg ${getFertilityColor(results.fertility)}`}>
-                    <p className="font-semibold">Fertility Level</p>
-                    <p className="text-lg capitalize">{results.fertility}</p>
-                  </div>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {analysisResult.healthScore >= 80 ? 'Excellent' : 
+                     analysisResult.healthScore >= 60 ? 'Good' : 'Needs Improvement'}
+                  </p>
                 </div>
 
+                {/* Nutrient Levels */}
                 <div className="space-y-3">
-                  <h4 className="font-semibold">Chemical Properties:</h4>
+                  <h3 className="font-semibold text-gray-900">Nutrient Analysis</h3>
                   
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div className="flex justify-between">
-                      <span>pH Level:</span>
-                      <span className={getStatusColor(getParameterStatus(results.ph, 6.0, 7.5))}>
-                        {results.ph}
-                      </span>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className={`p-3 rounded-lg ${getNutrientColor(analysisResult.nitrogen)}`}>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium">Nitrogen (N)</span>
+                        <span className="font-bold">{analysisResult.nitrogen}%</span>
+                      </div>
                     </div>
-                    <div className="flex justify-between">
-                      <span>Moisture:</span>
-                      <span className={getStatusColor(getParameterStatus(results.moisture, 40, 60))}>
-                        {results.moisture}%
-                      </span>
+                    
+                    <div className={`p-3 rounded-lg ${getNutrientColor(analysisResult.phosphorus)}`}>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium">Phosphorus (P)</span>
+                        <span className="font-bold">{analysisResult.phosphorus}%</span>
+                      </div>
                     </div>
-                    <div className="flex justify-between">
-                      <span>Nitrogen (N):</span>
-                      <span className={getStatusColor(getParameterStatus(results.nitrogen, 30, 50))}>
-                        {results.nitrogen} ppm
-                      </span>
+                    
+                    <div className={`p-3 rounded-lg ${getNutrientColor(analysisResult.potassium)}`}>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium">Potassium (K)</span>
+                        <span className="font-bold">{analysisResult.potassium}%</span>
+                      </div>
                     </div>
-                    <div className="flex justify-between">
-                      <span>Phosphorus (P):</span>
-                      <span className={getStatusColor(getParameterStatus(results.phosphorus, 15, 25))}>
-                        {results.phosphorus} ppm
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Potassium (K):</span>
-                      <span className={getStatusColor(getParameterStatus(results.potassium, 80, 120))}>
-                        {results.potassium} ppm
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Organic Matter:</span>
-                      <span className={getStatusColor(getParameterStatus(results.organicMatter, 2.0, 3.5))}>
-                        {results.organicMatter}%
-                      </span>
+                    
+                    <div className="p-3 rounded-lg bg-blue-50 text-blue-800">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium">Organic Matter</span>
+                        <span className="font-bold">{analysisResult.organicMatter}%</span>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div>
-                  <h4 className="font-semibold mb-2">Recommendations:</h4>
-                  <ul className="space-y-1">
-                    {results.recommendations.map((rec, index) => (
-                      <li key={index} className="flex items-start gap-2 text-sm">
-                        <Beaker className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                        {rec}
+                {/* Soil Properties */}
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-gray-900">Soil Properties</h3>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
+                      <span className="text-sm font-medium text-purple-800">pH Level</span>
+                      <Badge variant="secondary">{analysisResult.ph}</Badge>
+                    </div>
+                    
+                    <div className="flex items-center justify-between p-3 bg-cyan-50 rounded-lg">
+                      <div className="flex items-center gap-1">
+                        <Droplets className="h-4 w-4 text-cyan-600" />
+                        <span className="text-sm font-medium text-cyan-800">Moisture</span>
+                      </div>
+                      <Badge variant="secondary">{analysisResult.moisture}%</Badge>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recommendations */}
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    Recommendations
+                  </h3>
+                  <ul className="space-y-2">
+                    {analysisResult.recommendations.map((rec, index) => (
+                      <li key={index} className="flex items-start gap-2 p-2 bg-green-50 rounded">
+                        <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                        <span className="text-sm text-green-800">{rec}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
+
+                <Alert className="border-blue-200 bg-blue-50">
+                  <AlertTriangle className="h-4 w-4 text-blue-600" />
+                  <AlertDescription className="text-blue-800">
+                    <strong>Note:</strong> This analysis is based on visual assessment. For precise nutrient levels, 
+                    consider professional soil testing from an agricultural laboratory.
+                  </AlertDescription>
+                </Alert>
               </div>
             ) : (
-              <div className="text-center py-8 text-gray-500">
-                <Mountain className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                <p>Upload a soil sample image to see analysis results</p>
-                <p className="text-sm">വിശകലന ഫലങ്ങൾ കാണാൻ മണ്ണിന്റെ സാമ്പിൾ ചിത്രം അപ്‌ലോഡ് ചെയ്യുക</p>
+              <div className="text-center py-12 text-gray-500">
+                <Activity className="mx-auto h-16 w-16 mb-4 opacity-50" />
+                <p className="text-lg font-medium mb-2">No Analysis Yet</p>
+                <p className="text-sm">Upload a soil image and click analyze to get started</p>
               </div>
             )}
           </CardContent>
         </Card>
       </div>
 
-      {/* Soil Testing Features */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4 text-center">
-            <Beaker className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-            <h3 className="font-semibold">NPK Analysis</h3>
-            <p className="text-sm text-gray-600">Nitrogen, Phosphorus, Potassium</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4 text-center">
-            <Droplets className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-            <h3 className="font-semibold">pH Testing</h3>
-            <p className="text-sm text-gray-600">Soil acidity levels</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4 text-center">
-            <Thermometer className="w-8 h-8 text-orange-600 mx-auto mb-2" />
-            <h3 className="font-semibold">Moisture Content</h3>
-            <p className="text-sm text-gray-600">Water retention analysis</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4 text-center">
-            <Mountain className="w-8 h-8 text-green-600 mx-auto mb-2" />
-            <h3 className="font-semibold">Organic Matter</h3>
-            <p className="text-sm text-gray-600">Soil fertility assessment</p>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Tips Section */}
+      <Card className="mt-6 animate-in slide-in-from-bottom duration-500">
+        <CardHeader>
+          <CardTitle>Soil Sampling Tips for Better Results</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="text-center p-4">
+              <Camera className="mx-auto h-8 w-8 text-blue-600 mb-2" />
+              <h3 className="font-medium mb-1">Clear Sample</h3>
+              <p className="text-sm text-gray-600">Take photos of fresh, clean soil samples</p>
+            </div>
+            <div className="text-center p-4">
+              <FileImage className="mx-auto h-8 w-8 text-blue-600 mb-2" />
+              <h3 className="font-medium mb-1">Good Lighting</h3>
+              <p className="text-sm text-gray-600">Use natural daylight for accurate color assessment</p>
+            </div>
+            <div className="text-center p-4">
+              <Activity className="mx-auto h-8 w-8 text-blue-600 mb-2" />
+              <h3 className="font-medium mb-1">Multiple Samples</h3>
+              <p className="text-sm text-gray-600">Test soil from different areas of your field</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
+
+export default SoilDetection;

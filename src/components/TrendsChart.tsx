@@ -1,16 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TrendingUp } from 'lucide-react';
 import { useLanguage } from './LanguageContext';
-import { useQuery } from '@tanstack/react-query';
-import { fetchTrends } from '@/lib/api';
+import { mockTrendData } from '@/lib/mockData';
 
 export const TrendsChart = () => {
   const { t } = useLanguage();
-  const { data: trendData = [], isLoading } = useQuery({ queryKey: ['trends'], queryFn: fetchTrends });
 
   // Simple chart visualization using CSS
-  const maxNdvi = Math.max(1, ...trendData.map(d => d.ndvi));
-  const maxMoisture = Math.max(1, ...trendData.map(d => d.soilMoisture));
+  const maxNdvi = Math.max(...mockTrendData.map(d => d.ndvi));
+  const maxMoisture = Math.max(...mockTrendData.map(d => d.soilMoisture));
 
   return (
     <Card className="col-span-2">
@@ -26,7 +24,7 @@ export const TrendsChart = () => {
           <div>
             <h4 className="text-sm font-medium mb-2">{t('vegetationIndex')} (NDVI)</h4>
             <div className="flex items-end gap-2 h-20">
-              {(isLoading ? [] : trendData).map((data, index) => (
+              {mockTrendData.map((data, index) => (
                 <div key={index} className="flex-1 flex flex-col items-center">
                   <div
                     className="w-full bg-green-500 rounded-t transition-all duration-300 hover:bg-green-600"
@@ -42,7 +40,7 @@ export const TrendsChart = () => {
           <div>
             <h4 className="text-sm font-medium mb-2">{t('soilMoisture')} (%)</h4>
             <div className="flex items-end gap-2 h-20">
-              {(isLoading ? [] : trendData).map((data, index) => (
+              {mockTrendData.map((data, index) => (
                 <div key={index} className="flex-1 flex flex-col items-center">
                   <div
                     className="w-full bg-blue-500 rounded-t transition-all duration-300 hover:bg-blue-600"

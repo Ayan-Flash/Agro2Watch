@@ -1,140 +1,171 @@
 import React, { useState } from 'react';
-import { Menu, X, Globe, UserCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
+import { Badge } from '@/components/ui/badge';
+import { 
+  Leaf, 
+  BarChart3, 
+  Activity, 
+  Bug,
+  UserPlus, 
+  Settings, 
+  LogOut, 
+  Menu, 
+  X,
+  Globe,
+  User
+} from 'lucide-react';
+import { useAuth } from './AuthContext';
+import { useLanguage } from './LanguageContext';
+import { useTranslation, languageOptions } from '@/lib/translations';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
   DropdownMenuTrigger,
+  DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
-import { translations, languageOptions } from '@/lib/translations';
 
 interface NavigationProps {
-  currentPage: string;
-  onPageChange: (page: string) => void;
-  language: string;
-  onLanguageChange: (language: string) => void;
+  currentView: string;
+  onViewChange: (view: string) => void;
 }
 
-const Navigation: React.FC<NavigationProps> = ({
-  currentPage,
-  onPageChange,
-  language,
-  onLanguageChange,
-}) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const t = translations[language as keyof typeof translations];
+export const Navigation: React.FC<NavigationProps> = ({ currentView, onViewChange }) => {
+  const { user, logout } = useAuth();
+  const { language, setLanguage } = useLanguage();
+  const t = useTranslation(language);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const menuItems = [
-    { id: 'dashboard', label: t.dashboard },
-    { id: 'crop-detection', label: t.cropDetection },
-    { id: 'soil-detection', label: t.soilDetection },
-    { id: 'farmer-registration', label: t.farmerRegistration },
-    { id: 'admin-dashboard', label: t.adminDashboard },
-    { id: 'profile', label: 'Profile' },
+  const navigationItems = [
+    { id: 'dashboard', label: t.dashboard, icon: BarChart3 },
+    { id: 'crop-detection', label: t.cropDetection, icon: Leaf },
+    { id: 'pest-detection', label: t.pestDetection, icon: Bug },
+    { id: 'soil-detection', label: t.soilDetection, icon: Activity },
+    { id: 'farmer-registration', label: t.farmerRegistration, icon: UserPlus },
   ];
 
-  const currentLanguage = languageOptions.find(lang => lang.code === language);
+  const LanguageToggle = () => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="sm" className="gap-2">
+          <Globe className="h-4 w-4" />
+          <span className="hidden sm:inline">
+            {languageOptions.find(lang => lang.code === language)?.nativeName || 'English'}
+          </span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-48">
+        {languageOptions.map((lang) => (
+          <DropdownMenuItem
+            key={lang.code}
+            onClick={() => setLanguage(lang.code)}
+            className={language === lang.code ? 'bg-accent' : ''}
+          >
+            <span className="font-medium">{lang.nativeName}</span>
+            <span className="text-sm text-muted-foreground ml-2">({lang.name})</span>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
+  const UserMenu = () => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="sm" className="gap-2">
+          <User className="h-4 w-4" />
+          <span className="hidden sm:inline">
+            {user?.name || (user?.phone ? `User ${user.phone.slice(-4)}` : 'User')}
+          </span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-48">
+        <DropdownMenuItem onClick={() => onViewChange('farmer-registration')}>
+          <Settings className="h-4 w-4 mr-2" />
+          Settings
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={logout} className="text-red-600">
+          <LogOut className="h-4 w-4 mr-2" />
+          {t.logout}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 
   return (
-    <nav className="bg-green-600 text-white shadow-lg">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <h1 className="text-xl font-bold">AgroWatch</h1>
-            </div>
+    <nav className="bg-white shadow-sm border-b animate-in slide-in-from-top duration-300">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <div className="flex items-center space-x-2 animate-in zoom-in duration-300">
+            <Leaf className="h-8 w-8 text-green-600" />
+            <span className="text-xl font-bold text-green-600">AgroWatch</span>
+            <Badge variant="secondary" className="text-xs">India</Badge>
           </div>
 
-          {/* Desktop Menu */}
-          <div className="hidden md:flex items-center space-x-4">
-            {menuItems.map((item) => (
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-1">
+            {navigationItems.map((item) => (
               <Button
                 key={item.id}
-                variant={currentPage === item.id ? "secondary" : "ghost"}
-                onClick={() => onPageChange(item.id)}
-                className="text-white hover:bg-green-700"
+                variant={currentView === item.id ? "default" : "ghost"}
+                onClick={() => onViewChange(item.id)}
+                className="flex items-center space-x-2 transition-all hover:scale-105"
               >
-                {item.id === 'profile' ? <span className="flex items-center gap-2"><UserCircle className="h-4 w-4" /> {item.label}</span> : item.label}
+                <item.icon className="h-4 w-4" />
+                <span>{item.label}</span>
               </Button>
             ))}
-            
-            {/* Language Selector */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="text-white hover:bg-green-700 flex items-center gap-2">
-                  <Globe className="h-4 w-4" />
-                  {currentLanguage?.nativeName || 'English'}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                {languageOptions.map((lang) => (
-                  <DropdownMenuItem
-                    key={lang.code}
-                    onClick={() => onLanguageChange(lang.code)}
-                    className={`flex justify-between ${
-                      language === lang.code ? 'bg-green-50' : ''
-                    }`}
-                  >
-                    <span>{lang.name}</span>
-                    <span className="text-sm text-gray-500">{lang.nativeName}</span>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
           </div>
 
-          {/* Mobile menu button */}
-          <div className="md:hidden flex items-center">
+          {/* Desktop Right Menu */}
+          <div className="hidden md:flex items-center space-x-2">
+            <LanguageToggle />
+            <UserMenu />
+          </div>
+
+          {/* Mobile Menu Button */}
+          <div className="md:hidden">
             <Button
               variant="ghost"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-white hover:bg-green-700"
+              size="sm"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
           </div>
         </div>
 
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-              {menuItems.map((item) => (
+        {/* Mobile Navigation */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden py-4 border-t animate-in slide-in-from-top duration-200">
+            <div className="space-y-2">
+              {navigationItems.map((item) => (
                 <Button
                   key={item.id}
-                  variant={currentPage === item.id ? "secondary" : "ghost"}
+                  variant={currentView === item.id ? "default" : "ghost"}
                   onClick={() => {
-                    onPageChange(item.id);
-                    setIsMenuOpen(false);
+                    onViewChange(item.id);
+                    setIsMobileMenuOpen(false);
                   }}
-                  className="w-full text-left justify-start text-white hover:bg-green-700"
+                  className="w-full justify-start space-x-2"
                 >
-                  {item.label}
+                  <item.icon className="h-4 w-4" />
+                  <span>{item.label}</span>
                 </Button>
               ))}
               
-              {/* Mobile Language Selector */}
-              <div className="pt-2 border-t border-green-500">
-                <div className="text-sm text-green-200 mb-2 px-3">{t.language}</div>
-                {languageOptions.map((lang) => (
-                  <Button
-                    key={lang.code}
-                    variant="ghost"
-                    onClick={() => {
-                      onLanguageChange(lang.code);
-                      setIsMenuOpen(false);
-                    }}
-                    className={`w-full text-left justify-start text-white hover:bg-green-700 ${
-                      language === lang.code ? 'bg-green-700' : ''
-                    }`}
-                  >
-                    <div className="flex justify-between w-full">
-                      <span>{lang.name}</span>
-                      <span className="text-sm text-green-200">{lang.nativeName}</span>
-                    </div>
-                  </Button>
-                ))}
+              <div className="pt-4 border-t space-y-2">
+                <div className="flex items-center justify-between px-3 py-2">
+                  <span className="text-sm font-medium">Language</span>
+                  <LanguageToggle />
+                </div>
+                
+                <div className="flex items-center justify-between px-3 py-2">
+                  <span className="text-sm font-medium">Account</span>
+                  <UserMenu />
+                </div>
               </div>
             </div>
           </div>

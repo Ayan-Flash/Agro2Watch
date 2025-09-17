@@ -3,6 +3,7 @@ export interface Translations {
   dashboard: string;
   cropDetection: string;
   soilDetection: string;
+  pestDetection: string;
   farmerRegistration: string;
   adminDashboard: string;
   login: string;
@@ -20,6 +21,13 @@ export interface Translations {
   analyzeHealth: string;
   healthStatus: string;
   recommendations: string;
+  
+  // Pest Detection
+  pestDetectionAnalysis: string;
+  pestIdentification: string;
+  pestStatus: string;
+  treatmentPlan: string;
+  preventionTips: string;
   
   // Soil Detection
   soilHealthAnalysis: string;
@@ -42,11 +50,19 @@ export interface Translations {
   name: string;
   email: string;
   phone: string;
+  password: string;
   address: string;
   farmSize: string;
   cropType: string;
   register: string;
   submit: string;
+  
+  // Aadhaar System
+  aadhaarNumber: string;
+  scanQR: string;
+  fetchFromAadhaar: string;
+  aadhaarVerification: string;
+  autoFillFromAadhaar: string;
   
   // Common
   loading: string;
@@ -61,78 +77,40 @@ export interface Translations {
   // Language
   language: string;
   changeLanguage: string;
-
-  // Additional fields from existing system
-  cropHealth: string;
-  environmental: string;
-  trends: string;
-  settings: string;
-  subtitle: string;
-  fieldOverview: string;
-  healthyZones: string;
-  stressedZones: string;
-  criticalZones: string;
-  vegetationIndex: string;
-  soilCondition: string;
-  airTemperature: string;
-  leafWetness: string;
-  lastUpdated: string;
-  pestRisk: string;
-  diseaseRisk: string;
-  irrigationNeeded: string;
-  high: string;
-  medium: string;
-  low: string;
-  weeklyTrend: string;
-  monthlyTrend: string;
-  prediction: string;
-  viewDetails: string;
-  takeAction: string;
-  dismiss: string;
-  healthy: string;
-  stressed: string;
-  critical: string;
-  normal: string;
-  warning: string;
-  celsius: string;
-  percentage: string;
-  hectares: string;
+  
+  // Additional fields
+  subtitle?: string;
+  acres?: string;
+  hectares?: string;
+  corn?: string;
+  vegetables?: string;
+  both?: string;
+  createAccount?: string;
+  loginWithAadhaar?: string;
+  enterOtp?: string;
+  verifyOtp?: string;
+  farmDetails?: string;
+  cropTypes?: string;
+  signIn?: string;
 }
 
 export const translations: Record<string, Translations> = {
   en: {
-    // Navigation & General
-    dashboard: "Dashboard",
-    cropHealth: "Crop Health",
-    environmental: "Environmental Data",
-    alerts: "Alerts",
-    trends: "Trends",
-    settings: "Settings",
-    
-    // Dashboard
-    welcomeMessage: "Agricultural Monitoring System",
-    subtitle: "AI-Powered Precision Farming for Kerala",
-    
     // Navigation
+    dashboard: "Dashboard",
     cropDetection: "Crop Detection",
     soilDetection: "Soil Detection",
+    pestDetection: "Pest Detection",
     farmerRegistration: "Farmer Registration",
     adminDashboard: "Admin Dashboard",
     login: "Login",
     logout: "Logout",
     
     // Dashboard
+    welcomeMessage: "Welcome to AgroWatch",
     cropHealthOverview: "Crop Health Overview",
     environmentalData: "Environmental Data",
     recentAlerts: "Recent Alerts",
-    
-    // Crop Health
-    fieldOverview: "Field Overview",
-    healthyZones: "Healthy Zones",
-    stressedZones: "Stressed Zones",
-    criticalZones: "Critical Zones",
-    vegetationIndex: "Vegetation Index",
-    soilCondition: "Soil Condition",
     
     // Crop Detection
     cropHealthAnalysis: "Crop Health Analysis",
@@ -141,59 +119,47 @@ export const translations: Record<string, Translations> = {
     healthStatus: "Health Status",
     recommendations: "Recommendations",
     
+    // Pest Detection
+    pestDetectionAnalysis: "Pest Detection Analysis",
+    pestIdentification: "Pest Identification",
+    pestStatus: "Pest Status",
+    treatmentPlan: "Treatment Plan",
+    preventionTips: "Prevention Tips",
+    
     // Soil Detection
     soilHealthAnalysis: "Soil Health Analysis",
     soilMoisture: "Soil Moisture",
     phLevel: "pH Level",
     nutrients: "Nutrients",
     
-    // Environmental Data
-    airTemperature: "Air Temperature",
-    humidity: "Humidity",
-    soilMoistureLevel: "Soil Moisture Level",
-    leafWetness: "Leaf Wetness",
-    lastUpdated: "Last Updated",
-    
     // Environmental Panel
     temperature: "Temperature",
+    humidity: "Humidity",
+    soilMoistureLevel: "Soil Moisture Level",
     lightIntensity: "Light Intensity",
     
     // Alerts
-    pestRisk: "Pest Risk",
-    diseaseRisk: "Disease Risk",
-    weatherAlert: "Weather Alert",
-    irrigationNeeded: "Irrigation Needed",
-    high: "High",
-    medium: "Medium",
-    low: "Low",
+    alerts: "Alerts",
     pestAlert: "Pest Alert",
-    
-    // Trends
-    weeklyTrend: "Weekly Trend",
-    monthlyTrend: "Monthly Trend",
-    prediction: "Prediction",
-    
-    // Actions
-    viewDetails: "View Details",
-    takeAction: "Take Action",
-    dismiss: "Dismiss",
+    weatherAlert: "Weather Alert",
     
     // Forms
     name: "Name",
     email: "Email",
     phone: "Phone",
+    password: "Password",
     address: "Address",
     farmSize: "Farm Size",
     cropType: "Crop Type",
     register: "Register",
     submit: "Submit",
     
-    // Status
-    healthy: "Healthy",
-    stressed: "Stressed",
-    critical: "Critical",
-    normal: "Normal",
-    warning: "Warning",
+    // Aadhaar System
+    aadhaarNumber: "Aadhaar Number",
+    scanQR: "Scan QR Code",
+    fetchFromAadhaar: "Fetch from Aadhaar",
+    aadhaarVerification: "Aadhaar Verification",
+    autoFillFromAadhaar: "Auto-fill from Aadhaar",
     
     // Common
     loading: "Loading...",
@@ -209,160 +175,38 @@ export const translations: Record<string, Translations> = {
     language: "Language",
     changeLanguage: "Change Language",
     
-    // Units
-    celsius: "°C",
-    percentage: "%",
-    hectares: "hectares"
-  },
-  
-  ml: {
-    // Navigation & General
-    dashboard: "ഡാഷ്‌ബോർഡ്",
-    cropHealth: "വിള ആരോഗ്യം",
-    environmental: "പാരിസ്ഥിതിക ഡാറ്റ",
-    alerts: "മുന്നറിയിപ്പുകൾ",
-    trends: "പ്രവണതകൾ",
-    settings: "ക്രമീകരണങ്ങൾ",
-    
-    // Dashboard
-    welcomeMessage: "കാർഷിക നിരീക്ഷണ സംവിധാനം",
-    subtitle: "കേരളത്തിനായുള്ള AI-പവർഡ് കൃത്യമായ കൃഷി",
-    
-    // Navigation
-    cropDetection: "വിള കണ്ടെത്തൽ",
-    soilDetection: "മണ്ണ് കണ്ടെത്തൽ",
-    farmerRegistration: "കർഷക രജിസ്ട്രേഷൻ",
-    adminDashboard: "അഡ്മിൻ ഡാഷ്‌ബോർഡ്",
-    login: "ലോഗിൻ",
-    logout: "ലോഗൗട്ട്",
-    
-    // Dashboard
-    cropHealthOverview: "വിള ആരോഗ്യ അവലോകനം",
-    environmentalData: "പാരിസ്ഥിതിക ഡാറ്റ",
-    recentAlerts: "സമീപകാല അലേർട്ടുകൾ",
-    
-    // Crop Health
-    fieldOverview: "വയൽ അവലോകനം",
-    healthyZones: "ആരോഗ്യകരമായ പ്രദേശങ്ങൾ",
-    stressedZones: "സമ്മർദ്ദത്തിലുള്ള പ്രദേശങ്ങൾ",
-    criticalZones: "ഗുരുതരമായ പ്രദേശങ്ങൾ",
-    vegetationIndex: "സസ്യജാല സൂചിക",
-    soilCondition: "മണ്ണിന്റെ അവസ്ഥ",
-    
-    // Crop Detection
-    cropHealthAnalysis: "വിള ആരോഗ്യ വിശകലനം",
-    uploadImage: "ചിത്രം അപ്‌ലോഡ് ചെയ്യുക",
-    analyzeHealth: "ആരോഗ്യം വിശകലനം ചെയ്യുക",
-    healthStatus: "ആരോഗ്യ നില",
-    recommendations: "ശുപാർശകൾ",
-    
-    // Soil Detection
-    soilHealthAnalysis: "മണ്ണിന്റെ ആരോഗ്യ വിശകലനം",
-    soilMoisture: "മണ്ണിലെ ഈർപ്പം",
-    phLevel: "പിഎച്ച് ലെവൽ",
-    nutrients: "പോഷകങ്ങൾ",
-    
-    // Environmental Data
-    airTemperature: "വായുവിന്റെ താപനില",
-    humidity: "ആർദ്രത",
-    soilMoistureLevel: "മണ്ണിന്റെ ഈർപ്പ നില",
-    leafWetness: "ഇലയിലെ ഈർപ്പം",
-    lastUpdated: "അവസാനം അപ്‌ഡേറ്റ് ചെയ്തത്",
-    
-    // Environmental Panel
-    temperature: "താപനില",
-    lightIntensity: "പ്രകാശ തീവ്രത",
-    
-    // Alerts
-    pestRisk: "കീട അപകടസാധ്യത",
-    diseaseRisk: "രോഗ അപകടസാധ്യത",
-    weatherAlert: "കാലാവസ്ഥാ മുന്നറിയിപ്പ്",
-    irrigationNeeded: "ജലസേചനം ആവശ്യം",
-    high: "ഉയർന്നത്",
-    medium: "ഇടത്തരം",
-    low: "കുറഞ്ഞത്",
-    pestAlert: "കീട അലേർട്ട്",
-    
-    // Trends
-    weeklyTrend: "പ്രതിവാര പ്രവണത",
-    monthlyTrend: "പ്രതിമാസ പ്രവണത",
-    prediction: "പ്രവചനം",
-    
-    // Actions
-    viewDetails: "വിശദാംശങ്ങൾ കാണുക",
-    takeAction: "നടപടി എടുക്കുക",
-    dismiss: "നിരസിക്കുക",
-    
-    // Forms
-    name: "പേര്",
-    email: "ഇമെയിൽ",
-    phone: "ഫോൺ",
-    address: "വിലാസം",
-    farmSize: "കൃഷിയിടത്തിന്റെ വലുപ്പം",
-    cropType: "വിള തരം",
-    register: "രജിസ്റ്റർ ചെയ്യുക",
-    submit: "സമർപ്പിക്കുക",
-    
-    // Status
-    healthy: "ആരോഗ്യകരം",
-    stressed: "സമ്മർദ്ദത്തിൽ",
-    critical: "ഗുരുതരം",
-    normal: "സാധാരണ",
-    warning: "മുന്നറിയിപ്പ്",
-    
-    // Common
-    loading: "ലോഡ് ചെയ്യുന്നു...",
-    error: "പിശക്",
-    success: "വിജയം",
-    cancel: "റദ്ദാക്കുക",
-    save: "സേവ് ചെയ്യുക",
-    edit: "എഡിറ്റ് ചെയ്യുക",
-    delete: "ഇല്ലാതാക്കുക",
-    view: "കാണുക",
-    
-    // Language
-    language: "ഭാഷ",
-    changeLanguage: "ഭാഷ മാറ്റുക",
-    
-    // Units
-    celsius: "°സെ",
-    percentage: "%",
-    hectares: "ഹെക്ടർ"
+    // Additional
+    subtitle: "AI-Powered Precision Farming for India",
+    acres: "Acres",
+    hectares: "Hectares",
+    corn: "Corn",
+    vegetables: "Vegetables",
+    both: "Both",
+    createAccount: "Create Account",
+    loginWithAadhaar: "Login with Aadhaar",
+    enterOtp: "Enter OTP",
+    verifyOtp: "Verify OTP",
+    farmDetails: "Farm Details",
+    cropTypes: "What do you farm?",
+    signIn: "Sign In"
   },
   
   hi: {
-    // Navigation & General
-    dashboard: "डैशबोर्ड",
-    cropHealth: "फसल स्वास्थ्य",
-    environmental: "पर्यावरणीय डेटा",
-    alerts: "अलर्ट",
-    trends: "रुझान",
-    settings: "सेटिंग्स",
-    
-    // Dashboard
-    welcomeMessage: "कृषि निगरानी प्रणाली",
-    subtitle: "केरल के लिए AI-संचालित सटीक खेती",
-    
     // Navigation
+    dashboard: "डैशबोर्ड",
     cropDetection: "फसल का पता लगाना",
     soilDetection: "मिट्टी की जांच",
+    pestDetection: "कीट का पता लगाना",
     farmerRegistration: "किसान पंजीकरण",
     adminDashboard: "एडमिन डैशबोर्ड",
     login: "लॉग इन",
     logout: "लॉग आउट",
     
     // Dashboard
+    welcomeMessage: "एग्रोवॉच में आपका स्वागत है",
     cropHealthOverview: "फसल स्वास्थ्य अवलोकन",
     environmentalData: "पर्यावरणीय डेटा",
     recentAlerts: "हाल की अलर्ट",
-    
-    // Crop Health
-    fieldOverview: "खेत का अवलोकन",
-    healthyZones: "स्वस्थ क्षेत्र",
-    stressedZones: "तनावग्रस्त क्षेत्र",
-    criticalZones: "गंभीर क्षेत्र",
-    vegetationIndex: "वनस्पति सूचकांक",
-    soilCondition: "मिट्टी की स्थिति",
     
     // Crop Detection
     cropHealthAnalysis: "फसल स्वास्थ्य विश्लेषण",
@@ -371,59 +215,47 @@ export const translations: Record<string, Translations> = {
     healthStatus: "स्वास्थ्य स्थिति",
     recommendations: "सिफारिशें",
     
+    // Pest Detection
+    pestDetectionAnalysis: "कीट पहचान विश्लेषण",
+    pestIdentification: "कीट की पहचान",
+    pestStatus: "कीट स्थिति",
+    treatmentPlan: "उपचार योजना",
+    preventionTips: "रोकथाम के उपाय",
+    
     // Soil Detection
     soilHealthAnalysis: "मिट्टी स्वास्थ्य विश्लेषण",
     soilMoisture: "मिट्टी की नमी",
     phLevel: "पीएच स्तर",
     nutrients: "पोषक तत्व",
     
-    // Environmental Data
-    airTemperature: "हवा का तापमान",
-    humidity: "आर्द्रता",
-    soilMoistureLevel: "मिट्टी की नमी का स्तर",
-    leafWetness: "पत्ती की नमी",
-    lastUpdated: "अंतिम अपडेट",
-    
     // Environmental Panel
     temperature: "तापमान",
+    humidity: "आर्द्रता",
+    soilMoistureLevel: "मिट्टी की नमी का स्तर",
     lightIntensity: "प्रकाश की तीव्रता",
     
     // Alerts
-    pestRisk: "कीट जोखिम",
-    diseaseRisk: "रोग जोखिम",
-    weatherAlert: "मौसम अलर्ट",
-    irrigationNeeded: "सिंचाई की आवश्यकता",
-    high: "उच्च",
-    medium: "मध्यम",
-    low: "कम",
+    alerts: "अलर्ट",
     pestAlert: "कीट अलर्ट",
-    
-    // Trends
-    weeklyTrend: "साप्ताहिक रुझान",
-    monthlyTrend: "मासिक रुझान",
-    prediction: "भविष्यवाणी",
-    
-    // Actions
-    viewDetails: "विवरण देखें",
-    takeAction: "कार्रवाई करें",
-    dismiss: "खारिज करें",
+    weatherAlert: "मौसम अलर्ट",
     
     // Forms
     name: "नाम",
     email: "ईमेल",
     phone: "फोन",
+    password: "पासवर्ड",
     address: "पता",
     farmSize: "खेत का आकार",
     cropType: "फसल का प्रकार",
     register: "पंजीकरण करें",
     submit: "जमा करें",
     
-    // Status
-    healthy: "स्वस्थ",
-    stressed: "तनावग्रस्त",
-    critical: "गंभीर",
-    normal: "सामान्य",
-    warning: "चेतावनी",
+    // Aadhaar System
+    aadhaarNumber: "आधार संख्या",
+    scanQR: "क्यूआर कोड स्कैन करें",
+    fetchFromAadhaar: "आधार से डेटा लें",
+    aadhaarVerification: "आधार सत्यापन",
+    autoFillFromAadhaar: "आधार से ऑटो-फिल करें",
     
     // Common
     loading: "लोड हो रहा है...",
@@ -439,45 +271,38 @@ export const translations: Record<string, Translations> = {
     language: "भाषा",
     changeLanguage: "भाषा बदलें",
     
-    // Units
-    celsius: "°C",
-    percentage: "%",
-    hectares: "हेक्टेयर"
+    // Additional
+    subtitle: "भारत के लिए AI-संचालित सटीक खेती",
+    acres: "एकड़",
+    hectares: "हेक्टेयर",
+    corn: "मक्का",
+    vegetables: "सब्जियां",
+    both: "दोनों",
+    createAccount: "खाता बनाएं",
+    loginWithAadhaar: "आधार से लॉगिन करें",
+    enterOtp: "ओटीपी दर्ज करें",
+    verifyOtp: "ओटीपी सत्यापित करें",
+    farmDetails: "खेत का विवरण",
+    cropTypes: "आप क्या उगाते हैं?",
+    signIn: "साइन इन"
   },
   
   bn: {
-    // Navigation & General
-    dashboard: "ড্যাশবোর্ড",
-    cropHealth: "ফসলের স্বাস্থ্য",
-    environmental: "পরিবেশগত তথ্য",
-    alerts: "সতর্কতা",
-    trends: "প্রবণতা",
-    settings: "সেটিংস",
-    
-    // Dashboard
-    welcomeMessage: "কৃষি পর্যবেক্ষণ ব্যবস্থা",
-    subtitle: "কেরালার জন্য AI-চালিত নির্ভুল কৃষি",
-    
     // Navigation
+    dashboard: "ড্যাশবোর্ড",
     cropDetection: "ফসল সনাক্তকরণ",
     soilDetection: "মাটি সনাক্তকরণ",
+    pestDetection: "কীটপতঙ্গ সনাক্তকরণ",
     farmerRegistration: "কৃষক নিবন্ধন",
     adminDashboard: "অ্যাডমিন ড্যাশবোর্ড",
     login: "লগইন",
     logout: "লগআউট",
     
     // Dashboard
+    welcomeMessage: "এগ্রোওয়াচে স্বাগতম",
     cropHealthOverview: "ফসলের স্বাস্থ্য পর্যালোচনা",
     environmentalData: "পরিবেশগত তথ্য",
     recentAlerts: "সাম্প্রতিক সতর্কতা",
-    
-    // Crop Health
-    fieldOverview: "ক্ষেতের পর্যালোচনা",
-    healthyZones: "স্বাস্থ্যকর অঞ্চল",
-    stressedZones: "চাপগ্রস্ত অঞ্চল",
-    criticalZones: "সংকটপূর্ণ অঞ্চল",
-    vegetationIndex: "উদ্ভিদ সূচক",
-    soilCondition: "মাটির অবস্থা",
     
     // Crop Detection
     cropHealthAnalysis: "ফসলের স্বাস্থ্য বিশ্লেষণ",
@@ -486,59 +311,47 @@ export const translations: Record<string, Translations> = {
     healthStatus: "স্বাস্থ্যের অবস্থা",
     recommendations: "সুপারিশ",
     
+    // Pest Detection
+    pestDetectionAnalysis: "কীটপতঙ্গ সনাক্তকরণ বিশ্লেষণ",
+    pestIdentification: "কীটপতঙ্গ চিহ্নিতকরণ",
+    pestStatus: "কীটপতঙ্গের অবস্থা",
+    treatmentPlan: "চিকিৎসা পরিকল্পনা",
+    preventionTips: "প্রতিরোধের উপায়",
+    
     // Soil Detection
     soilHealthAnalysis: "মাটির স্বাস্থ্য বিশ্লেষণ",
     soilMoisture: "মাটির আর্দ্রতা",
     phLevel: "পিএইচ স্তর",
     nutrients: "পুষ্টি উপাদান",
     
-    // Environmental Data
-    airTemperature: "বাতাসের তাপমাত্রা",
-    humidity: "আর্দ্রতা",
-    soilMoistureLevel: "মাটির আর্দ্রতার স্তর",
-    leafWetness: "পাতার আর্দ্রতা",
-    lastUpdated: "সর্বশেষ আপডেট",
-    
     // Environmental Panel
     temperature: "তাপমাত্রা",
+    humidity: "আর্দ্রতা",
+    soilMoistureLevel: "মাটির আর্দ্রতার স্তর",
     lightIntensity: "আলোর তীব্রতা",
     
     // Alerts
-    pestRisk: "কীটপতঙ্গের ঝুঁকি",
-    diseaseRisk: "রোগের ঝুঁকি",
-    weatherAlert: "আবহাওয়া সতর্কতা",
-    irrigationNeeded: "সেচের প্রয়োজন",
-    high: "উচ্চ",
-    medium: "মধ্যম",
-    low: "নিম্ন",
+    alerts: "সতর্কতা",
     pestAlert: "কীটপতঙ্গ সতর্কতা",
-    
-    // Trends
-    weeklyTrend: "সাপ্তাহিক প্রবণতা",
-    monthlyTrend: "মাসিক প্রবণতা",
-    prediction: "পূর্ভাবাস",
-    
-    // Actions
-    viewDetails: "বিস্তারিত দেখুন",
-    takeAction: "পদক্ষেপ নিন",
-    dismiss: "বাতিল করুন",
+    weatherAlert: "আবহাওয়া সতর্কতা",
     
     // Forms
     name: "নাম",
     email: "ইমেইল",
     phone: "ফোন",
+    password: "পাসওয়ার্ড",
     address: "ঠিকানা",
     farmSize: "খামারের আকার",
     cropType: "ফসলের ধরন",
     register: "নিবন্ধন করুন",
     submit: "জমা দিন",
     
-    // Status
-    healthy: "স্বাস্থ্যকর",
-    stressed: "চাপগ্রস্ত",
-    critical: "সংকটপূর্ণ",
-    normal: "স্বাভাবিক",
-    warning: "সতর্কতা",
+    // Aadhaar System
+    aadhaarNumber: "আধার নম্বর",
+    scanQR: "কিউআর কোড স্ক্যান করুন",
+    fetchFromAadhaar: "আধার থেকে তথ্য নিন",
+    aadhaarVerification: "আধার যাচাইকরণ",
+    autoFillFromAadhaar: "আধার থেকে অটো-ফিল করুন",
     
     // Common
     loading: "লোড হচ্ছে...",
@@ -554,45 +367,38 @@ export const translations: Record<string, Translations> = {
     language: "ভাষা",
     changeLanguage: "ভাষা পরিবর্তন করুন",
     
-    // Units
-    celsius: "°C",
-    percentage: "%",
-    hectares: "হেক্টর"
+    // Additional
+    subtitle: "ভারতের জন্য AI-চালিত নির্ভুল কৃষি",
+    acres: "একর",
+    hectares: "হেক্টর",
+    corn: "ভুট্টা",
+    vegetables: "সবজি",
+    both: "উভয়",
+    createAccount: "অ্যাকাউন্ট তৈরি করুন",
+    loginWithAadhaar: "আধার দিয়ে লগইন করুন",
+    enterOtp: "ওটিপি লিখুন",
+    verifyOtp: "ওটিপি যাচাই করুন",
+    farmDetails: "খামারের বিবরণ",
+    cropTypes: "আপনি কী চাষ করেন?",
+    signIn: "সাইন ইন"
   },
   
   gu: {
-    // Navigation & General
-    dashboard: "ડેશબોર્ડ",
-    cropHealth: "પાક આરોગ્ય",
-    environmental: "પર્યાવરણીય ડેટા",
-    alerts: "અલર્ટ્સ",
-    trends: "વલણો",
-    settings: "સેટિંગ્સ",
-    
-    // Dashboard
-    welcomeMessage: "કૃષિ નિરીક્ષણ સિસ્ટમ",
-    subtitle: "કેરળ માટે AI-સંચાલિત ચોક્કસ ખેતી",
-    
     // Navigation
+    dashboard: "ડેશબોર્ડ",
     cropDetection: "પાક શોધ",
     soilDetection: "માટી શોધ",
+    pestDetection: "જીવાત શોધ",
     farmerRegistration: "ખેડૂત નોંધણી",
     adminDashboard: "એડમિન ડેશબોર્ડ",
     login: "લોગિન",
     logout: "લોગઆઉટ",
     
     // Dashboard
+    welcomeMessage: "એગ્રોવોચમાં આપનું સ્વાગત છે",
     cropHealthOverview: "પાક આરોગ્ય વિહંગાવલોકન",
     environmentalData: "પર્યાવરણીય ડેટા",
     recentAlerts: "તાજેતરના અલર્ટ્સ",
-    
-    // Crop Health
-    fieldOverview: "ખેતરનું વિહંગાવલોકન",
-    healthyZones: "આરોગ્યપ્રદ વિસ્તારો",
-    stressedZones: "તણાવગ્રસ્ત વિસ્તારો",
-    criticalZones: "ગંભીર વિસ્તારો",
-    vegetationIndex: "વનસ્પતિ સૂચકાંક",
-    soilCondition: "માટીની સ્થિતિ",
     
     // Crop Detection
     cropHealthAnalysis: "પાક આરોગ્ય વિશ્લેષણ",
@@ -601,59 +407,47 @@ export const translations: Record<string, Translations> = {
     healthStatus: "આરોગ્ય સ્થિતિ",
     recommendations: "ભલામણો",
     
+    // Pest Detection
+    pestDetectionAnalysis: "જીવાત શોધ વિશ્લેષણ",
+    pestIdentification: "જીવાત ઓળખ",
+    pestStatus: "જીવાત સ્થિતિ",
+    treatmentPlan: "સારવાર યોજના",
+    preventionTips: "બચાવના ઉપાયો",
+    
     // Soil Detection
     soilHealthAnalysis: "માટી આરોગ્ય વિશ્લેષણ",
     soilMoisture: "માટીની ભેજ",
     phLevel: "પીએચ સ્તર",
     nutrients: "પોષક તત્વો",
     
-    // Environmental Data
-    airTemperature: "હવાનું તાપમાન",
-    humidity: "ભેજ",
-    soilMoistureLevel: "માટીની ભેજનું સ્તર",
-    leafWetness: "પાંદડાની ભેજ",
-    lastUpdated: "છેલ્લે અપડેટ",
-    
     // Environmental Panel
     temperature: "તાપમાન",
+    humidity: "ભેજ",
+    soilMoistureLevel: "માટીની ભેજનું સ્તર",
     lightIntensity: "પ્રકાશની તીવ્રતા",
     
     // Alerts
-    pestRisk: "જીવાતનું જોખમ",
-    diseaseRisk: "રોગનું જોખમ",
-    weatherAlert: "હવામાન અલર્ટ",
-    irrigationNeeded: "સિંચાઈની જરૂર",
-    high: "ઊંચું",
-    medium: "મધ્યમ",
-    low: "નીચું",
+    alerts: "અલર્ટ્સ",
     pestAlert: "જીવાત અલર્ટ",
-    
-    // Trends
-    weeklyTrend: "સાપ્તાહિક વલણ",
-    monthlyTrend: "માસિક વલણ",
-    prediction: "આગાહી",
-    
-    // Actions
-    viewDetails: "વિગતો જુઓ",
-    takeAction: "પગલાં લો",
-    dismiss: "બરતરફ કરો",
+    weatherAlert: "હવામાન અલર્ટ",
     
     // Forms
     name: "નામ",
     email: "ઈમેઈલ",
     phone: "ફોન",
+    password: "પાસવર્ડ",
     address: "સરનામું",
     farmSize: "ખેતરનું કદ",
     cropType: "પાકનો પ્રકાર",
     register: "નોંધણી કરો",
     submit: "સબમિટ કરો",
     
-    // Status
-    healthy: "આરોગ્યપ્રદ",
-    stressed: "તણાવગ્રસ્ત",
-    critical: "ગંભીર",
-    normal: "સામાન્ય",
-    warning: "ચેતવણી",
+    // Aadhaar System
+    aadhaarNumber: "આધાર નંબર",
+    scanQR: "ક્યુઆર કોડ સ્કેન કરો",
+    fetchFromAadhaar: "આધારથી ડેટા લો",
+    aadhaarVerification: "આધાર ચકાસણી",
+    autoFillFromAadhaar: "આધારથી ઓટો-ફિલ કરો",
     
     // Common
     loading: "લોડ થઈ રહ્યું છે...",
@@ -669,45 +463,38 @@ export const translations: Record<string, Translations> = {
     language: "ભાષા",
     changeLanguage: "ભાષા બદલો",
     
-    // Units
-    celsius: "°C",
-    percentage: "%",
-    hectares: "હેક્ટર"
+    // Additional
+    subtitle: "ભારત માટે AI-સંચાલિત ચોક્કસ ખેતી",
+    acres: "એકર",
+    hectares: "હેક્ટર",
+    corn: "મકાઈ",
+    vegetables: "શાકભાજી",
+    both: "બંને",
+    createAccount: "ખાતું બનાવો",
+    loginWithAadhaar: "આધાર સાથે લોગિન કરો",
+    enterOtp: "ઓટીપી દાખલ કરો",
+    verifyOtp: "ઓટીપી ચકાસો",
+    farmDetails: "ખેતરની વિગતો",
+    cropTypes: "તમે શું ઉગાડો છો?",
+    signIn: "સાઇન ઇન"
   },
   
   ta: {
-    // Navigation & General
-    dashboard: "டாஷ்போர்டு",
-    cropHealth: "பயிர் ஆரோக்கியம்",
-    environmental: "சுற்றுச்சூழல் தரவு",
-    alerts: "எச்சரிக்கைகள்",
-    trends: "போக்குகள்",
-    settings: "அமைப்புகள்",
-    
-    // Dashboard
-    welcomeMessage: "விவசாய கண்காணிப்பு அமைப்பு",
-    subtitle: "கேரளாவிற்கான AI-இயங்கும் துல்லியமான விவசாயம்",
-    
     // Navigation
+    dashboard: "டாஷ்போர்டு",
     cropDetection: "பயிர் கண்டறிதல்",
     soilDetection: "மண் கண்டறிதல்",
+    pestDetection: "பூச்சி கண்டறிதல்",
     farmerRegistration: "விவசாயி பதிவு",
     adminDashboard: "நிர்வாக டாஷ்போர்டு",
     login: "உள்நுழைவு",
     logout: "வெளியேறு",
     
     // Dashboard
+    welcomeMessage: "அக்ரோவாட்சிற்கு வரவேற்கிறோம்",
     cropHealthOverview: "பயிர் ஆரோக்கிய மேலோட்டம்",
     environmentalData: "சுற்றுச்சூழல் தரவு",
     recentAlerts: "சமீபத்திய எச்சரிக்கைகள்",
-    
-    // Crop Health
-    fieldOverview: "வயல் மேலோட்டம்",
-    healthyZones: "ஆரோக்கியமான பகுதிகள்",
-    stressedZones: "அழுத்தமான பகுதிகள்",
-    criticalZones: "முக்கியமான பகுதிகள்",
-    vegetationIndex: "தாவர குறியீடு",
-    soilCondition: "மண் நிலை",
     
     // Crop Detection
     cropHealthAnalysis: "பயிர் ஆரோக்கிய பகுப்பாய்வு",
@@ -716,59 +503,47 @@ export const translations: Record<string, Translations> = {
     healthStatus: "ஆரோக்கிய நிலை",
     recommendations: "பரிந்துரைகள்",
     
+    // Pest Detection
+    pestDetectionAnalysis: "பூச்சி கண்டறிதல் பகுப்பாய்வு",
+    pestIdentification: "பூச்சி அடையாளம்",
+    pestStatus: "பூச்சி நிலை",
+    treatmentPlan: "சிகிச்சை திட்டம்",
+    preventionTips: "தடுப்பு வழிகள்",
+    
     // Soil Detection
     soilHealthAnalysis: "மண் ஆரோக்கிய பகுப்பாய்வு",
     soilMoisture: "மண் ஈரப்பதம்",
     phLevel: "பிஎச் அளவு",
     nutrients: "ஊட்டச்சத்துக்கள்",
     
-    // Environmental Data
-    airTemperature: "காற்று வெப்பநிலை",
-    humidity: "ஈரப்பதம்",
-    soilMoistureLevel: "மண் ஈரப்பத அளவு",
-    leafWetness: "இலை ஈரப்பதம்",
-    lastUpdated: "கடைசியாக புதுப்பிக்கப்பட்டது",
-    
     // Environmental Panel
     temperature: "வெப்பநிலை",
+    humidity: "ஈரப்பதம்",
+    soilMoistureLevel: "மண் ஈரப்பத அளவு",
     lightIntensity: "ஒளி தீவிரம்",
     
     // Alerts
-    pestRisk: "பூச்சி ஆபத்து",
-    diseaseRisk: "நோய் ஆபத்து",
-    weatherAlert: "வானிலை எச்சரிக்கை",
-    irrigationNeeded: "நீர்ப்பாசனம் தேவை",
-    high: "உயர்ந்த",
-    medium: "நடுத்தர",
-    low: "குறைந்த",
+    alerts: "எச்சரிக்கைகள்",
     pestAlert: "பூச்சி எச்சரிக்கை",
-    
-    // Trends
-    weeklyTrend: "வாராந்திர போக்கு",
-    monthlyTrend: "மாதாந்திர போக்கு",
-    prediction: "முன்னறிவிப்பு",
-    
-    // Actions
-    viewDetails: "விவரங்களைப் பார்க்கவும்",
-    takeAction: "நடவடிக்கை எடுக்கவும்",
-    dismiss: "நிராகரிக்கவும்",
+    weatherAlert: "வானிலை எச்சரிக்கை",
     
     // Forms
     name: "பெயர்",
     email: "மின்னஞ்சல்",
     phone: "தொலைபேசி",
+    password: "கடவுச்சொல்",
     address: "முகவரி",
     farmSize: "பண்ணை அளவு",
     cropType: "பயிர் வகை",
     register: "பதிவு செய்யவும்",
     submit: "சமர்ப்பிக்கவும்",
     
-    // Status
-    healthy: "ஆரோக்கியமான",
-    stressed: "அழுத்தமான",
-    critical: "முக்கியமான",
-    normal: "சாதாரண",
-    warning: "எச்சரிக்கை",
+    // Aadhaar System
+    aadhaarNumber: "ஆதார் எண்",
+    scanQR: "க்யூஆர் கோட் ஸ்கேன் செய்யவும்",
+    fetchFromAadhaar: "ஆதாரிலிருந்து தரவு எடுக்கவும்",
+    aadhaarVerification: "ஆதார் சரிபார்ப்பு",
+    autoFillFromAadhaar: "ஆதாரிலிருந்து தானாக நிரப்பவும்",
     
     // Common
     loading: "ஏற்றுகிறது...",
@@ -784,45 +559,38 @@ export const translations: Record<string, Translations> = {
     language: "மொழி",
     changeLanguage: "மொழியை மாற்றவும்",
     
-    // Units
-    celsius: "°C",
-    percentage: "%",
-    hectares: "ஹெக்டேர்"
+    // Additional
+    subtitle: "இந்தியாவிற்கான AI-இயங்கும் துல்லியமான விவசாயம்",
+    acres: "ஏக்கர்",
+    hectares: "ஹெக்டேர்",
+    corn: "சோளம்",
+    vegetables: "காய்கறிகள்",
+    both: "இரண்டும்",
+    createAccount: "கணக்கை உருவாக்கவும்",
+    loginWithAadhaar: "ஆதார் மூலம் உள்நுழையவும்",
+    enterOtp: "OTP ஐ உள்ளிடவும்",
+    verifyOtp: "OTP ஐ சரிபார்க்கவும்",
+    farmDetails: "பண்ணை விவரங்கள்",
+    cropTypes: "நீங்கள் என்ன வளர்க்கிறீர்கள்?",
+    signIn: "உள்நுழையவும்"
   },
   
   te: {
-    // Navigation & General
-    dashboard: "డాష్‌బోర్డ్",
-    cropHealth: "పంట ఆరోగ్యం",
-    environmental: "పర్యావరణ డేటా",
-    alerts: "హెచ్చరికలు",
-    trends: "ధోరణులు",
-    settings: "సెట్టింగులు",
-    
-    // Dashboard
-    welcomeMessage: "వ్యవసాయ పర్యవేక్షణ వ్యవస్థ",
-    subtitle: "కేరళ కోసం AI-చాలిత ఖచ్చితమైన వ్యవసాయం",
-    
     // Navigation
+    dashboard: "డాష్‌బోర్డ్",
     cropDetection: "పంట గుర్తింపు",
     soilDetection: "మట్టి గుర్తింపు",
+    pestDetection: "కీటక గుర్తింపు",
     farmerRegistration: "రైతు నమోదు",
     adminDashboard: "అడ్మిన్ డాష్‌బోర్డ్",
     login: "లాగిన్",
     logout: "లాగౌట్",
     
     // Dashboard
+    welcomeMessage: "అగ్రోవాచ్‌కు స్వాగతం",
     cropHealthOverview: "పంట ఆరోగ్య సమీక్ష",
     environmentalData: "పర్యావరణ డేటా",
     recentAlerts: "ఇటీవలి హెచ్చరికలు",
-    
-    // Crop Health
-    fieldOverview: "పొలం సమీక్ష",
-    healthyZones: "ఆరోగ్యకరమైన ప్రాంతాలు",
-    stressedZones: "ఒత్తిడిలో ఉన్న ప్రాంతాలు",
-    criticalZones: "క్లిష్టమైన ప్రాంతాలు",
-    vegetationIndex: "వృక్షసంపద సూచిక",
-    soilCondition: "మట్టి పరిస్థితి",
     
     // Crop Detection
     cropHealthAnalysis: "పంట ఆరోగ్య విశ్లేషణ",
@@ -831,59 +599,47 @@ export const translations: Record<string, Translations> = {
     healthStatus: "ఆరోగ్య స్థితి",
     recommendations: "సిఫార్సులు",
     
+    // Pest Detection
+    pestDetectionAnalysis: "కీటక గుర్తింపు విశ్లేషణ",
+    pestIdentification: "కీటక గుర్తింపు",
+    pestStatus: "కీటక స్థితి",
+    treatmentPlan: "చికిత్స ప్రణాళిక",
+    preventionTips: "నివారణ చిట్కాలు",
+    
     // Soil Detection
     soilHealthAnalysis: "మట్టి ఆరోగ్య విశ్లేషణ",
     soilMoisture: "మట్టి తేమ",
     phLevel: "పిహెచ్ స్థాయి",
     nutrients: "పోషకాలు",
     
-    // Environmental Data
-    airTemperature: "గాలి ఉష్ణోగ్రత",
-    humidity: "తేమ",
-    soilMoistureLevel: "మట్టి తేమ స్థాయి",
-    leafWetness: "ఆకు తేమ",
-    lastUpdated: "చివరిగా అప్‌డేట్ చేయబడింది",
-    
     // Environmental Panel
     temperature: "ఉష్ణోగ్రత",
+    humidity: "తేమ",
+    soilMoistureLevel: "మట్టి తేమ స్థాయి",
     lightIntensity: "కాంతి తీవ్రత",
     
     // Alerts
-    pestRisk: "కీటక ప్రమాదం",
-    diseaseRisk: "వ్యాధి ప్రమాదం",
-    weatherAlert: "వాతావరణ హెచ్చరిక",
-    irrigationNeeded: "నీటిపారుదల అవసరం",
-    high: "అధిక",
-    medium: "మధ్యమ",
-    low: "తక్కువ",
+    alerts: "హెచ్చరికలు",
     pestAlert: "కీటక హెచ్చరిక",
-    
-    // Trends
-    weeklyTrend: "వారపు ధోరణి",
-    monthlyTrend: "నెలవారీ ధోరణి",
-    prediction: "అంచనా",
-    
-    // Actions
-    viewDetails: "వివరాలు చూడండి",
-    takeAction: "చర్య తీసుకోండి",
-    dismiss: "తోసిపుచ్చండి",
+    weatherAlert: "వాతావరణ హెచ్చరిక",
     
     // Forms
     name: "పేరు",
     email: "ఇమెయిల్",
     phone: "ఫోన్",
+    password: "పాస్‌వర్డ్",
     address: "చిరునామా",
     farmSize: "వ్యవసాయ భూమి పరిమాణం",
     cropType: "పంట రకం",
     register: "నమోదు చేయండి",
     submit: "సమర్పించండి",
     
-    // Status
-    healthy: "ఆరోగ్యకరమైన",
-    stressed: "ఒత్తిడిలో",
-    critical: "క్లిష్టమైన",
-    normal: "సాధారణ",
-    warning: "హెచ్చరిక",
+    // Aadhaar System
+    aadhaarNumber: "ఆధార్ నంబర్",
+    scanQR: "క్యూఆర్ కోడ్ స్కాన్ చేయండి",
+    fetchFromAadhaar: "ఆధార్ నుండి డేటా తీసుకోండి",
+    aadhaarVerification: "ఆధార్ ధృవీకరణ",
+    autoFillFromAadhaar: "ఆధార్ నుండి ఆటో-ఫిల్ చేయండి",
     
     // Common
     loading: "లోడ్ అవుతోంది...",
@@ -899,45 +655,38 @@ export const translations: Record<string, Translations> = {
     language: "భాష",
     changeLanguage: "భాష మార్చండి",
     
-    // Units
-    celsius: "°C",
-    percentage: "%",
-    hectares: "హెక్టార్లు"
+    // Additional
+    subtitle: "భారతదేశం కోసం AI-శక్తితో కూడిన ఖచ్చితమైన వ్యవసాయం",
+    acres: "ఎకరాలు",
+    hectares: "హెక్టార్లు",
+    corn: "మొక్కజొన్న",
+    vegetables: "కూరగాయలు",
+    both: "రెండూ",
+    createAccount: "ఖాతా సృష్టించండి",
+    loginWithAadhaar: "ఆధార్‌తో లాగిన్ చేయండి",
+    enterOtp: "OTP నమోదు చేయండి",
+    verifyOtp: "OTP ధృవీకరించండి",
+    farmDetails: "వ్యవసాయ వివరాలు",
+    cropTypes: "మీరు ఏమి పండిస్తారు?",
+    signIn: "సైన్ ఇన్"
   },
   
   as: {
-    // Navigation & General
-    dashboard: "ডেশ্ববর্ড",
-    cropHealth: "শস্যৰ স্বাস্থ্য",
-    environmental: "পৰিৱেশগত তথ্য",
-    alerts: "সতৰ্কবাণী",
-    trends: "প্ৰৱণতা",
-    settings: "ছেটিংছ",
-    
-    // Dashboard
-    welcomeMessage: "কৃষি নিৰীক্ষণ ব্যৱস্থা",
-    subtitle: "কেৰালাৰ বাবে AI-চালিত নিৰ্ভুল কৃষি",
-    
     // Navigation
+    dashboard: "ডেশ্ববর্ড",
     cropDetection: "শস্য চিনাক্তকৰণ",
     soilDetection: "মাটি চিনাক্তকৰণ",
+    pestDetection: "কীট-পতংগ চিনাক্তকৰণ",
     farmerRegistration: "কৃষক পঞ্জীয়ন",
     adminDashboard: "প্ৰশাসক ডেশ্ববর্ড",
     login: "লগইন",
     logout: "লগআউট",
     
     // Dashboard
+    welcomeMessage: "এগ্ৰোৱাচলৈ স্বাগতম",
     cropHealthOverview: "শস্যৰ স্বাস্থ্য অৱলোকন",
     environmentalData: "পৰিৱেশগত তথ্য",
     recentAlerts: "শেহতীয়া সতৰ্কবাণী",
-    
-    // Crop Health
-    fieldOverview: "পথাৰৰ অৱলোকন",
-    healthyZones: "স্বাস্থ্যকৰ অঞ্চল",
-    stressedZones: "চাপগ্ৰস্ত অঞ্চল",
-    criticalZones: "গুৰুতৰ অঞ্চল",
-    vegetationIndex: "উদ্ভিদ সূচক",
-    soilCondition: "মাটিৰ অৱস্থা",
     
     // Crop Detection
     cropHealthAnalysis: "শস্যৰ স্বাস্থ্য বিশ্লেষণ",
@@ -946,59 +695,47 @@ export const translations: Record<string, Translations> = {
     healthStatus: "স্বাস্থ্যৰ অৱস্থা",
     recommendations: "পৰামৰ্শ",
     
+    // Pest Detection
+    pestDetectionAnalysis: "কীট-পতংগ চিনাক্তকৰণ বিশ্লেষণ",
+    pestIdentification: "কীট-পতংগ চিনাক্তকৰণ",
+    pestStatus: "কীট-পতংগৰ অৱস্থা",
+    treatmentPlan: "চিকিৎসা পৰিকল্পনা",
+    preventionTips: "প্ৰতিৰোধৰ উপায়",
+    
     // Soil Detection
     soilHealthAnalysis: "মাটিৰ স্বাস্থ্য বিশ্লেষণ",
     soilMoisture: "মাটিৰ আৰ্দ্ৰতা",
     phLevel: "পিএইচ স্তৰ",
     nutrients: "পুষ্টিকৰ উপাদান",
     
-    // Environmental Data
-    airTemperature: "বায়ুৰ উষ্ণতা",
-    humidity: "আৰ্দ্ৰতা",
-    soilMoistureLevel: "মাটিৰ আৰ্দ্ৰতাৰ স্তৰ",
-    leafWetness: "পাতৰ আৰ্দ্ৰতা",
-    lastUpdated: "শেষবাৰ আপডেট",
-    
     // Environmental Panel
     temperature: "উষ্ণতা",
+    humidity: "আৰ্দ্ৰতা",
+    soilMoistureLevel: "মাটিৰ আৰ্দ্ৰতাৰ স্তৰ",
     lightIntensity: "পোহৰৰ তীব্ৰতা",
     
     // Alerts
-    pestRisk: "কীট-পতংগৰ বিপদ",
-    diseaseRisk: "ৰোগৰ বিপদ",
-    weatherAlert: "বতৰৰ সতৰ্কবাণী",
-    irrigationNeeded: "জলসিঞ্চনৰ প্ৰয়োজন",
-    high: "উচ্চ",
-    medium: "মধ্যম",
-    low: "নিম্ন",
+    alerts: "সতৰ্কবাণী",
     pestAlert: "কীট-পতংগৰ সতৰ্কবাণী",
-    
-    // Trends
-    weeklyTrend: "সাপ্তাহিক প্ৰৱণতা",
-    monthlyTrend: "মাহেকীয়া প্ৰৱণতা",
-    prediction: "পূৰ্বাভাস",
-    
-    // Actions
-    viewDetails: "বিৱৰণ চাওক",
-    takeAction: "পদক্ষেপ লওক",
-    dismiss: "নাকচ কৰক",
+    weatherAlert: "বতৰৰ সতৰ্কবাণী",
     
     // Forms
     name: "নাম",
     email: "ইমেইল",
     phone: "ফোন",
+    password: "পাছৱৰ্ড",
     address: "ঠিকনা",
     farmSize: "খেতিৰ আকাৰ",
     cropType: "শস্যৰ প্ৰকাৰ",
     register: "পঞ্জীয়ন কৰক",
     submit: "দাখিল কৰক",
     
-    // Status
-    healthy: "স্বাস্থ্যকৰ",
-    stressed: "চাপগ্ৰস্ত",
-    critical: "গুৰুতৰ",
-    normal: "স্বাভাৱিক",
-    warning: "সতৰ্কবাণী",
+    // Aadhaar System
+    aadhaarNumber: "আধাৰ নম্বৰ",
+    scanQR: "কিউআৰ কোড স্কেন কৰক",
+    fetchFromAadhaar: "আধাৰৰ পৰা তথ্য লওক",
+    aadhaarVerification: "আধাৰ সত্যাপন",
+    autoFillFromAadhaar: "আধাৰৰ পৰা অটো-ফিল কৰক",
     
     // Common
     loading: "লোড হৈ আছে...",
@@ -1014,16 +751,25 @@ export const translations: Record<string, Translations> = {
     language: "ভাষা",
     changeLanguage: "ভাষা সলনি কৰক",
     
-    // Units
-    celsius: "°C",
-    percentage: "%",
-    hectares: "হেক্টৰ"
+    // Additional
+    subtitle: "ভাৰতৰ বাবে AI-চালিত নিখুঁত কৃষি",
+    acres: "একৰ",
+    hectares: "হেক্টৰ",
+    corn: "ভুট্টা",
+    vegetables: "পাচলি",
+    both: "দুয়োটা",
+    createAccount: "একাউণ্ট সৃষ্টি কৰক",
+    loginWithAadhaar: "আধাৰৰ সৈতে লগইন কৰক",
+    enterOtp: "ওটিপি দিয়ক",
+    verifyOtp: "ওটিপি সত্যাপন কৰক",
+    farmDetails: "খেতিৰ বিৱৰণ",
+    cropTypes: "আপুনি কি খেতি কৰে?",
+    signIn: "ছাইন ইন"
   }
 };
 
 export const languageOptions = [
   { code: 'en', name: 'English', nativeName: 'English' },
-  { code: 'ml', name: 'Malayalam', nativeName: 'മലയാളം' },
   { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी' },
   { code: 'bn', name: 'Bengali', nativeName: 'বাংলা' },
   { code: 'gu', name: 'Gujarati', nativeName: 'ગુજરાતી' },
@@ -1033,8 +779,14 @@ export const languageOptions = [
 ];
 
 export type Language = keyof typeof translations;
-export type TranslationKey = keyof typeof translations.en;
+export type TranslationKey = string;
 
 export const useTranslation = (language: string): Translations => {
   return translations[language] || translations.en;
+};
+
+export const t = (key: TranslationKey, language: string = 'en'): string => {
+  const translation: Record<string, string> = (translations as any)[language] || translations.en;
+  const fallback: Record<string, string> = translations.en as any;
+  return translation[key] || fallback[key] || key;
 };

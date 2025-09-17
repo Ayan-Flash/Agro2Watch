@@ -1,24 +1,66 @@
-import { Toaster } from '@/components/ui/sonner';
-import { TooltipProvider } from '@/components/ui/tooltip';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Index from './pages/Index';
-import NotFound from './pages/NotFound';
+import React, { useState } from 'react';
+import { AuthProvider } from './components/AuthContext';
+import { LanguageProvider } from './components/LanguageContext';
+import { useAuth } from './components/AuthContext';
+import Login from './components/login';
+import Navigation from './components/Navigation';
+import Dashboard from './components/Dashboard';
+import CropDetection from './components/CropDetection';
+import PestDetection from './components/PestDetection';
+import SoilDetection from './components/SoilDetection';
+import FarmerRegistration from './components/FarmerRegistration';
 
-const queryClient = new QueryClient();
+const AppContent: React.FC = () => {
+  const { user, isLoading } = useAuth();
+  const [currentView, setCurrentView] = useState('dashboard');
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-600"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Login />;
+  }
+
+  const renderCurrentView = () => {
+    switch (currentView) {
+      case 'dashboard':
+        return <Dashboard />;
+      case 'crop-detection':
+        return <CropDetection />;
+      case 'pest-detection':
+        return <PestDetection />;
+      case 'soil-detection':
+        return <SoilDetection />;
+      case 'farmer-registration':
+        return <FarmerRegistration />;
+      default:
+        return <Dashboard />;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Navigation currentView={currentView} onViewChange={setCurrentView} />
+      <main>
+        {renderCurrentView()}
+      </main>
+    </div>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <LanguageProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </LanguageProvider>
+  );
+};
 
 export default App;

@@ -1,15 +1,13 @@
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Badge } from '../components/ui/badge';
-import { Button } from '../components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { AlertTriangle, Bug, Droplets, Cloud } from 'lucide-react';
 import { useLanguage } from './LanguageContext';
-import { useQuery } from '@tanstack/react-query';
-import { fetchAlerts } from '@/lib/api';
-import { TranslationKey } from '../lib/translations';
+import { mockAlerts } from '@/lib/mockData';
+import { TranslationKey } from '@/lib/translations';
 
 export const AlertsPanel = () => {
   const { t } = useLanguage();
-  const { data: alerts = [], isLoading } = useQuery({ queryKey: ['alerts'], queryFn: fetchAlerts });
 
   const getAlertIcon = (type: string) => {
     switch (type) {
@@ -48,7 +46,7 @@ export const AlertsPanel = () => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {(isLoading ? [] : alerts).map((alert) => {
+        {mockAlerts.map((alert) => {
           const Icon = getAlertIcon(alert.type);
           
           return (
@@ -61,7 +59,7 @@ export const AlertsPanel = () => {
                   <Icon className="w-4 h-4 mt-0.5 text-gray-600" />
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <Badge variant={getSeverityColor(alert.severity)}>
+                      <Badge variant={getSeverityColor(alert.severity)} className="text-[10px] py-0.5 px-1.5">
                         {t(alert.severity as TranslationKey)}
                       </Badge>
                       <span className="text-xs text-gray-500">{alert.zone}</span>
@@ -73,10 +71,10 @@ export const AlertsPanel = () => {
               </div>
               <div className="flex gap-2 mt-2">
                 <Button size="sm" variant="outline" className="text-xs">
-                  {t('viewDetails')}
+                  {t('view' as TranslationKey)}
                 </Button>
                 <Button size="sm" variant="outline" className="text-xs">
-                  {t('takeAction')}
+                  {t('submit' as TranslationKey)}
                 </Button>
               </div>
             </div>
