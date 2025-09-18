@@ -185,24 +185,48 @@ const Navbar: React.FC<NavbarProps> = ({ currentSection, onNavigate, onLogout })
 
         {/* Mobile Navigation Menu */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden border-t border-gray-200 py-4">
-            <div className="grid grid-cols-2 gap-3">
+          <div className="lg:hidden border-t border-gray-200 py-4 bg-white">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
               {navItems.map((item) => (
                 <Button
                   key={item.id}
                   variant={currentSection === item.id ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => handleNavigation(item.id)}
-                  className={`flex items-center justify-center space-x-2 w-full h-12 ${
+                  className={`flex items-center justify-center space-x-2 w-full h-12 sm:h-14 touch-manipulation ${
                     currentSection === item.id
                       ? 'bg-green-600 text-white shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 active:bg-gray-200'
                   }`}
                 >
                   <item.icon className="h-4 w-4 flex-shrink-0" />
-                  <span className="text-sm font-medium">{item.label}</span>
+                  <span className="text-xs sm:text-sm font-medium truncate">{item.label}</span>
                 </Button>
               ))}
+            </div>
+            
+            {/* Mobile Profile Actions */}
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <div className="flex flex-col space-y-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleNavigation('profile')}
+                  className="w-full justify-start h-10 touch-manipulation"
+                >
+                  <User className="h-4 w-4 mr-2" />
+                  Profile
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => { logout(); onLogout && onLogout(); }}
+                  className="w-full justify-start h-10 text-red-600 hover:text-red-700 hover:bg-red-50 touch-manipulation"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </Button>
+              </div>
             </div>
           </div>
         )}

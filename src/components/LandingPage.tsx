@@ -121,10 +121,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
 
   const teamMembers = [
     {
-      name: "Dr. Arvind Sharma",
-      role: "Lead AI Researcher",
+      name: "Ayan Ghosh",
+      role: "ALL",
       expertise: "Computer Vision & Machine Learning",
-      education: "PhD in Agricultural AI, IIT Delhi",
+      education: "NO EDUCATION",
       image: "👨‍💼",
       social: {
         linkedin: "#",

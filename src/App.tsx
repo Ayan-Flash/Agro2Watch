@@ -8,6 +8,7 @@ import Dashboard from './components/Dashboard';
 import CropDetection from './components/CropDetection';
 import PestDetection from './components/PestDetection';
 import SoilDetection from './components/SoilDetection';
+import { EnvironmentalPanel } from './components/EnvironmentalPanel';
 import FarmerRegistration from './components/FarmerRegistration';
 import LandingPage from './components/LandingPage';
 import Profile from './components/Profile';
@@ -63,11 +64,21 @@ const AppContent: React.FC = () => {
       case 'dashboard':
         return <Dashboard onViewChange={handleNavigationChange} />;
       case 'crop-detection':
-        return <CropDetection />;
+        return <CropDetection onNavigate={handleNavigationChange} />;
       case 'pest-detection':
         return <PestDetection />;
       case 'soil-detection':
         return <SoilDetection />;
+      case 'environmental':
+        return (
+          <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-indigo-50">
+            <div className="container mx-auto px-4 py-6">
+              <div className="max-w-4xl mx-auto">
+                <EnvironmentalPanel />
+              </div>
+            </div>
+          </div>
+        );
       case 'farmer-registration':
         return <FarmerRegistration />;
       case 'government-schemes':

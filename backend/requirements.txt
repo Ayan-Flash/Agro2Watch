@@ -14,6 +14,9 @@ passlib[bcrypt]==1.7.4
 # HTTP Client
 httpx==0.25.2
 
+# Twilio SMS Service
+twilio==8.10.0
+
 # Environment & Configuration
 python-dotenv==1.0.0
 

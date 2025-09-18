@@ -1,11 +1,38 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Thermometer, Droplets, Wind, Leaf } from 'lucide-react';
+import { Thermometer, Droplets, Wind, Leaf, Gauge, Cloud, Sun, MapPin } from 'lucide-react';
 import { useLanguage } from './LanguageContext';
 import { mockEnvironmentalData } from '@/lib/mockData';
+import { getCurrentLocationWeather, WeatherData } from '@/lib/weatherApi';
+import { useState, useEffect } from 'react';
 
 export const EnvironmentalPanel = () => {
   const { t } = useLanguage();
+  const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchWeatherData = async () => {
+      try {
+        const data = await getCurrentLocationWeather();
+        setWeatherData(data);
+      } catch (error) {
+        console.error('Error fetching weather data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchWeatherData();
+
+    // Set up periodic weather data refresh (every 3 minutes)
+    const weatherInterval = setInterval(fetchWeatherData, 3 * 60 * 1000);
+
+    // Cleanup interval on component unmount
+    return () => {
+      clearInterval(weatherInterval);
+    };
+  }, []);
 
   const sensors = [
     {
@@ -19,7 +46,7 @@ export const EnvironmentalPanel = () => {
     {
       icon: Thermometer,
       label: t('airTemperature'),
-      value: mockEnvironmentalData.airTemperature,
+      value: weatherData?.temperature || mockEnvironmentalData.airTemperature,
       unit: t('celsius'),
       color: 'bg-orange-500',
       optimal: [20, 35]
@@ -27,15 +54,15 @@ export const EnvironmentalPanel = () => {
     {
       icon: Wind,
       label: t('humidity'),
-      value: mockEnvironmentalData.humidity,
+      value: weatherData?.humidity || mockEnvironmentalData.humidity,
       unit: t('percentage'),
       color: 'bg-cyan-500',
       optimal: [50, 85]
     },
     {
-      icon: Wind,
+      icon: Gauge,
       label: 'Pressure',
-      value: (mockEnvironmentalData as any).pressure || 1013,
+      value: weatherData?.pressure || 1013,
       unit: ' hPa',
       color: 'bg-gray-500',
       optimal: [980, 1030]
@@ -43,7 +70,7 @@ export const EnvironmentalPanel = () => {
     {
       icon: Wind,
       label: 'Wind Speed',
-      value: (mockEnvironmentalData as any).windSpeed || 5,
+      value: weatherData?.windSpeed || 5,
       unit: ' m/s',
       color: 'bg-slate-500',
       optimal: [0, 12]
@@ -65,6 +92,32 @@ export const EnvironmentalPanel = () => {
     return 'text-yellow-600';
   };
 
+  if (loading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Wind className="w-5 h-5" />
+            {t('environmental')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="h-4 bg-gray-200 rounded w-1/3 animate-pulse"></div>
+                  <div className="h-4 bg-gray-200 rounded w-16 animate-pulse"></div>
+                </div>
+                <div className="h-2 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -72,9 +125,19 @@ export const EnvironmentalPanel = () => {
           <Wind className="w-5 h-5" />
           {t('environmental')}
         </CardTitle>
-        <p className="text-sm text-gray-500">
-          {t('lastUpdated')}: {mockEnvironmentalData.lastUpdated}
-        </p>
+        <div className="flex items-center gap-4 text-sm text-gray-500">
+          <div className="flex items-center gap-1">
+            <MapPin className="w-4 h-4" />
+            {weatherData?.location || 'Loading...'}
+          </div>
+          <div className="flex items-center gap-1">
+            <Cloud className="w-4 h-4" />
+            {weatherData?.description || 'Partly cloudy'}
+          </div>
+          <div>
+            {t('lastUpdated')}: {new Date().toLocaleString()}
+          </div>
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         {sensors.map((sensor, index) => {

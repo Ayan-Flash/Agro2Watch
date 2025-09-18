@@ -50,6 +50,11 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, onViewChange }) =>
       active: currentView === 'pest-detection'
     },
     {
+      id: 'environmental',
+      label: 'Environmental',
+      active: currentView === 'environmental'
+    },
+    {
       id: 'farmer-registration',
       label: 'Farmer Registration',
       active: currentView === 'farmer-registration'

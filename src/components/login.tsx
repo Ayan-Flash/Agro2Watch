@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +9,7 @@ import { Leaf, Phone, Globe, CreditCard, Shield, Loader2, AlertTriangle } from '
 import { useAuth } from './AuthContext';
 import { useLanguage } from './LanguageContext';
 import { useTranslation, languageOptions } from '@/lib/translations';
+import { setupRecaptcha, clearRecaptcha } from '@/lib/firebase';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -32,6 +33,28 @@ export const Login: React.FC = () => {
   const { login, signup, sendOTP, verifyOTP } = useAuth();
   const { language, setLanguage } = useLanguage();
   const t = useTranslation(language);
+
+  // Initialize reCAPTCHA on component mount
+  useEffect(() => {
+    const initializeRecaptcha = async () => {
+      try {
+        console.log('🔧 Initializing reCAPTCHA for login component');
+        await setupRecaptcha('recaptcha-container');
+        console.log('✅ reCAPTCHA initialized successfully');
+      } catch (error) {
+        console.error('❌ Error initializing reCAPTCHA:', error);
+      }
+    };
+
+    // Small delay to ensure DOM is ready
+    const timer = setTimeout(initializeRecaptcha, 100);
+    
+    return () => {
+      clearTimeout(timer);
+      // Clean up reCAPTCHA on unmount
+      clearRecaptcha();
+    };
+  }, []);
 
   const handlePhoneAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,11 +80,15 @@ export const Login: React.FC = () => {
     try {
       if (isSignup) {
         // Send OTP for signup
-        const otpSent = await sendOTP(phone);
-        if (otpSent) {
+        console.log('📱 Sending OTP for signup:', phone);
+        const otpResult = await sendOTP(phone);
+        console.log('📊 OTP result:', otpResult);
+        
+        if (otpResult.success) {
           setShowOtp(true);
+          setError(''); // Clear any previous errors
         } else {
-          setError('Failed to send OTP. Please try again.');
+          setError(otpResult.error || 'Failed to send OTP. Please try again.');
         }
       } else {
         // Direct login for existing users
@@ -70,8 +97,9 @@ export const Login: React.FC = () => {
           setError('Invalid phone number or password');
         }
       }
-    } catch (err) {
-      setError('Authentication failed. Please try again.');
+    } catch (err: any) {
+      console.error('❌ Authentication error:', err);
+      setError(err.message || 'Authentication failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -87,12 +115,17 @@ export const Login: React.FC = () => {
     setError('');
     
     try {
+      console.log('🔍 Verifying OTP for:', phone, 'OTP:', otp);
       const verified = await verifyOTP(phone, otp);
+      console.log('📊 OTP verification result:', verified);
+      
       if (verified) {
         if (isSignup) {
           // Complete signup with provided password, then login
+          console.log('📝 Completing signup for:', phone);
           const created = await signup(phone, password, name);
           if (created) {
+            console.log('✅ Account created, logging in...');
             await login(phone, password);
           } else {
             setError('Account already exists with this phone number');
@@ -101,8 +134,9 @@ export const Login: React.FC = () => {
       } else {
         setError('Invalid OTP. Please try again.');
       }
-    } catch (err) {
-      setError('OTP verification failed. Please try again.');
+    } catch (err: any) {
+      console.error('❌ OTP verification error:', err);
+      setError(err.message || 'OTP verification failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -137,6 +171,9 @@ export const Login: React.FC = () => {
       <div className="absolute top-4 right-4">
         <LanguageToggle />
       </div>
+      
+      {/* reCAPTCHA container for Firebase phone auth */}
+      <div id="recaptcha-container" className="hidden"></div>
       
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center space-y-4">

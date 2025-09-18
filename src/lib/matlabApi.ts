@@ -3,7 +3,7 @@
  * Handles communication with the MATLAB-based backend
  */
 
-const API_BASE_URL = 'http://localhost:8000/api/v1';
+const API_BASE_URL = 'http://localhost:8001/api/v1';
 
 export interface AnalysisResult {
   status: string;

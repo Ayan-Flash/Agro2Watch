@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from './LanguageContext';
 import { useTranslation } from '@/lib/translations';
+import { getMockAnalysisResult } from '@/lib/imageAnalysisMockData';
 
 interface PestAnalysisResult {
   pest: string;
@@ -61,31 +62,46 @@ export const PestDetection: React.FC = () => {
     setError(null);
 
     try {
-      // Simulate API call to backend
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      // Mock analysis result
-      const mockResult: PestAnalysisResult = {
-        pest: 'Aphids',
-        confidence: 0.87,
-        severity: 'medium',
-        treatment: [
-          'Apply neem oil spray (2-3ml per liter of water)',
-          'Use insecticidal soap solution',
-          'Introduce beneficial insects like ladybugs',
-          'Remove heavily infested leaves'
-        ],
-        prevention: [
-          'Maintain proper plant spacing for good air circulation',
-          'Regular inspection of plants',
-          'Avoid over-fertilizing with nitrogen',
-          'Use reflective mulches to deter aphids',
-          'Plant companion crops like marigolds'
-        ],
-        description: 'Small, soft-bodied insects that feed on plant sap. They can cause yellowing, wilting, and stunted growth.'
-      };
+      // Try backend first
+      try {
+        const formData = new FormData();
+        formData.append('file', selectedImage);
+        
+        const response = await fetch('http://localhost:8001/analyze/pest-detection', {
+          method: 'POST',
+          body: formData,
+        });
 
-      setAnalysisResult(mockResult);
+        if (!response.ok) {
+          throw new Error(`Backend not available: ${response.status}`);
+        }
+
+        const result = await response.json();
+        setAnalysisResult(result);
+      } catch (backendError) {
+        console.log('Backend not available, using mock data for pest analysis');
+        
+        // Use mock data when backend is not available
+        const mockAnalysisResult = getMockAnalysisResult('pest-detection');
+        
+        // Convert to PestAnalysisResult format
+        const mockResult: PestAnalysisResult = {
+          pest: mockAnalysisResult.results.detections?.[0]?.pest_type || 'Aphids',
+          confidence: mockAnalysisResult.results.confidence,
+          severity: mockAnalysisResult.results.severity as 'low' | 'medium' | 'high' || 'medium',
+          treatment: mockAnalysisResult.results.recommendations.slice(0, 4),
+          prevention: [
+            'Maintain proper plant spacing for good air circulation',
+            'Regular inspection of plants',
+            'Avoid over-fertilizing with nitrogen',
+            'Use reflective mulches to deter pests',
+            'Plant companion crops like marigolds'
+          ],
+          description: `Pest detected with ${Math.round(mockAnalysisResult.results.confidence * 100)}% confidence. ${mockAnalysisResult.results.recommendations[0] || 'Follow recommended treatment.'}`
+        };
+
+        setAnalysisResult(mockResult);
+      }
     } catch (err) {
       setError('Failed to analyze image. Please try again.');
     } finally {

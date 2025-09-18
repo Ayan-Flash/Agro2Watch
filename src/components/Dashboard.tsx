@@ -11,12 +11,14 @@ import {
   AlertTriangle,
   TrendingUp,
   Activity,
-  MapPin
+  MapPin,
+  RefreshCw
 } from 'lucide-react';
 import { useLanguage } from './LanguageContext';
 import { useAuth } from './AuthContext';
 import { useTranslation } from '@/lib/translations';
 import { getCurrentLocationWeather, fetchWeatherByCity } from '@/lib/weatherApi';
+import { EnvironmentalPanel } from './EnvironmentalPanel';
 
 interface DashboardProps {
   onViewChange?: (view: string) => void;
@@ -44,36 +46,49 @@ export const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [cropData, setCropData] = useState<CropData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState<string>('');
 
   // Fetch real weather data using user's current location (geolocation)
-  useEffect(() => {
-    const fetchWeatherData = async () => {
-      try {
-        let data;
-        if (user?.location) {
-          data = await fetchWeatherByCity(user.location);
-        } else {
-          data = await getCurrentLocationWeather();
-        }
-        setWeatherData({
-          temperature: data.temperature,
-          humidity: data.humidity,
-          windSpeed: data.windSpeed,
-          description: data.description,
-          location: data.location
-        });
-      } catch (error) {
-        console.error('Error fetching weather data:', error);
-        // Fallback data
-        setWeatherData({
-          temperature: 25,
-          humidity: 70,
-          windSpeed: 10,
-          description: 'Data unavailable',
-          location: 'India'
-        });
+  const fetchWeatherData = async (isRefresh = false) => {
+    if (isRefresh) setRefreshing(true);
+    
+    try {
+      let data;
+      if (selectedLocation) {
+        console.log(`Fetching weather for selected location: ${selectedLocation}`);
+        data = await fetchWeatherByCity(selectedLocation);
+      } else if (user?.location) {
+        console.log(`Fetching weather for user location: ${user.location}`);
+        data = await fetchWeatherByCity(user.location);
+      } else {
+        console.log('Fetching weather for current GPS location');
+        data = await getCurrentLocationWeather();
       }
-    };
+      console.log('Weather data received:', data);
+      setWeatherData({
+        temperature: data.temperature,
+        humidity: data.humidity,
+        windSpeed: data.windSpeed,
+        description: data.description,
+        location: data.location
+      });
+    } catch (error) {
+      console.error('Error fetching weather data:', error);
+      // Fallback data
+      setWeatherData({
+        temperature: 25,
+        humidity: 70,
+        windSpeed: 10,
+        description: 'Data unavailable',
+        location: 'India'
+      });
+    } finally {
+      if (isRefresh) setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
 
     const fetchCropData = async () => {
       try {
@@ -94,6 +109,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
     fetchWeatherData();
     fetchCropData();
     setLoading(false);
+
+    // Set up periodic weather data refresh (every 5 minutes)
+    const weatherInterval = setInterval(() => fetchWeatherData(false), 5 * 60 * 1000);
+
+    // Cleanup interval on component unmount
+    return () => {
+      clearInterval(weatherInterval);
+    };
   }, [user]);
 
   if (loading) {
@@ -127,6 +150,41 @@ export const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
         </div>
 
         {/* Weather Cards */}
+        <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <h2 className="text-xl font-semibold text-gray-900">Current Weather</h2>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <select
+              value={selectedLocation}
+              onChange={(e) => {
+                setSelectedLocation(e.target.value);
+                if (e.target.value) {
+                  fetchWeatherData();
+                }
+              }}
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Use GPS Location</option>
+              <option value="delhi">New Delhi</option>
+              <option value="mumbai">Mumbai</option>
+              <option value="bangalore">Bangalore</option>
+              <option value="chennai">Chennai</option>
+              <option value="kolkata">Kolkata</option>
+              <option value="hyderabad">Hyderabad</option>
+              <option value="pune">Pune</option>
+              <option value="jaipur">Jaipur</option>
+            </select>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => fetchWeatherData(true)}
+              disabled={refreshing}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+              {refreshing ? 'Updating...' : 'Refresh'}
+            </Button>
+          </div>
+        </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
           <Card className="hover:shadow-md transition-shadow duration-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -140,6 +198,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
               <p className="text-xs text-muted-foreground">
                 {weatherData?.description || 'Loading...'}
               </p>
+              {weatherData && (
+                <p className="text-xs text-gray-400 mt-1">
+                  Updated: {new Date().toLocaleTimeString()}
+                </p>
+              )}
             </CardContent>
           </Card>
 
@@ -165,7 +228,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {weatherData?.windSpeed || '--'} km/h
+                {weatherData?.windSpeed || '--'} m/s
               </div>
               <p className="text-xs text-muted-foreground">
                 Current wind speed
@@ -180,7 +243,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
             </CardHeader>
             <CardContent>
               <div className="text-lg font-bold">
-                {weatherData?.location || 'Kerala'}
+                {weatherData?.location || 'Loading...'}
               </div>
               <p className="text-xs text-muted-foreground">
                 Current location
@@ -256,6 +319,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
         </Card>
       </div>
 
+      {/* Environmental Data Panel */}
+      <div className="mb-8">
+        <EnvironmentalPanel />
+      </div>
+
       {/* Quick Actions */}
       <Card>
         <CardHeader>
@@ -265,31 +333,31 @@ export const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             <Button 
-              className="h-20 flex-col gap-2"
+              className="h-16 sm:h-20 flex-col gap-2 touch-manipulation active:scale-95 transition-transform"
               onClick={() => onViewChange?.('crop-detection')}
             >
-              <Leaf className="h-6 w-6" />
-              Analyze Crops
+              <Leaf className="h-5 w-5 sm:h-6 sm:w-6" />
+              <span className="text-sm sm:text-base">Analyze Crops</span>
             </Button>
             
             <Button 
               variant="outline" 
-              className="h-20 flex-col gap-2"
+              className="h-16 sm:h-20 flex-col gap-2 touch-manipulation active:scale-95 transition-transform"
               onClick={() => onViewChange?.('soil-detection')}
             >
-              <Activity className="h-6 w-6" />
-              Test Soil
+              <Activity className="h-5 w-5 sm:h-6 sm:w-6" />
+              <span className="text-sm sm:text-base">Test Soil</span>
             </Button>
             
             <Button 
               variant="outline" 
-              className="h-20 flex-col gap-2"
+              className="h-16 sm:h-20 flex-col gap-2 touch-manipulation active:scale-95 transition-transform sm:col-span-2 lg:col-span-1"
               onClick={() => onViewChange?.('farmer-registration')}
             >
-              <TrendingUp className="h-6 w-6" />
-              Update Profile
+              <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6" />
+              <span className="text-sm sm:text-base">Update Profile</span>
             </Button>
           </div>
         </CardContent>

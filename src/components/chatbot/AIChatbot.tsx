@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
 import { useTranslation } from '@/lib/translations';
+import { getChatbotResponse, getQuickActionResponse } from '@/lib/chatbotMockData';
 import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
 
@@ -72,6 +73,7 @@ export const AIChatbot: React.FC<ChatbotProps> = ({ isOpen, onToggle, className 
 
   const handleInitialGreeting = async () => {
     try {
+      // Try backend first
       const response = await fetch('/api/v1/chatbot/message', {
         method: 'POST',
         headers: {
@@ -88,15 +90,14 @@ export const AIChatbot: React.FC<ChatbotProps> = ({ isOpen, onToggle, className 
       if (response.ok) {
         const data = await response.json();
         addBotMessage(data);
+      } else {
+        throw new Error('Backend not available');
       }
     } catch (error) {
-      console.error('Error sending initial greeting:', error);
-      addBotMessage({
-        text: getLocalizedGreeting(),
-        type: 'greeting',
-        quick_actions: getDefaultQuickActions(),
-        suggestions: ['Weather forecast', 'Crop problems', 'Government schemes']
-      });
+      console.log('Using mock data for chatbot - backend not available');
+      // Use mock data when backend is not available
+      const mockResponse = getChatbotResponse('Hello', language);
+      addBotMessage(mockResponse);
     }
   };
 
@@ -137,17 +138,14 @@ export const AIChatbot: React.FC<ChatbotProps> = ({ isOpen, onToggle, className 
       let response;
       
       if (imageFile) {
-        // Handle image message
-        const formData = new FormData();
-        formData.append('user_id', userId);
-        formData.append('message', message);
-        formData.append('language', language);
-        formData.append('image_file', imageFile);
-
-        response = await fetch('/api/v1/chatbot/image-query', {
-          method: 'POST',
-          body: formData,
+        // Handle image message - for now, use mock response
+        console.log('Image analysis not available in mock mode');
+        addBotMessage({
+          text: "I can see you've uploaded an image, but image analysis is not available in offline mode. Please describe what you see in the image and I'll help you with text-based advice.",
+          type: 'image_response',
+          suggestions: ['Describe the image', 'Ask about crop problems', 'Get general advice']
         });
+        return;
       } else {
         // Handle text message
         response = await fetch('/api/v1/chatbot/message', {
@@ -164,19 +162,17 @@ export const AIChatbot: React.FC<ChatbotProps> = ({ isOpen, onToggle, className 
         });
       }
 
-      if (response.ok) {
+      if (response && response.ok) {
         const data = await response.json();
         addBotMessage(data);
       } else {
-        throw new Error('Failed to get response');
+        throw new Error('Backend not available');
       }
     } catch (error) {
-      console.error('Error sending message:', error);
-      addBotMessage({
-        text: "I'm sorry, I'm having trouble connecting right now. Please try again later.",
-        type: 'error',
-        suggestions: ['Try again', 'Help']
-      });
+      console.log('Using mock data for chatbot response');
+      // Use mock data when backend is not available
+      const mockResponse = getChatbotResponse(message, language);
+      addBotMessage(mockResponse);
     } finally {
       setIsLoading(false);
     }
@@ -201,17 +197,9 @@ export const AIChatbot: React.FC<ChatbotProps> = ({ isOpen, onToggle, className 
   };
 
   const handleQuickAction = (action: any) => {
-    const actionMessages = {
-      weather_query: "What's the weather forecast for farming?",
-      crop_problem: "I have a problem with my crops",
-      schemes_info: "Tell me about government schemes for farmers",
-      market_prices: "What are the current market prices?",
-      soil_advice: "I need advice about soil health",
-      expert_connect: "I want to connect with an expert"
-    };
-    
-    const message = actionMessages[action.action] || `Help me with ${action.title}`;
-    sendMessage(message);
+    // Use mock data for quick actions
+    const mockResponse = getQuickActionResponse(action.action, language);
+    addBotMessage(mockResponse);
   };
 
   const clearChat = async () => {
@@ -246,16 +234,16 @@ export const AIChatbot: React.FC<ChatbotProps> = ({ isOpen, onToggle, className 
     return (
       <Button
         onClick={onToggle}
-        className={`fixed bottom-4 right-4 z-50 rounded-full h-14 w-14 shadow-lg bg-green-600 hover:bg-green-700 ${className}`}
+        className={`fixed bottom-4 right-4 z-50 rounded-full h-12 w-12 sm:h-14 sm:w-14 shadow-lg bg-green-600 hover:bg-green-700 touch-manipulation active:scale-95 transition-transform ${className}`}
       >
-        <MessageCircle className="h-6 w-6 text-white" />
+        <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
       </Button>
     );
   }
 
   return (
     <div className={`fixed bottom-4 right-4 z-50 ${className}`}>
-      <Card className={`w-96 shadow-xl transition-all duration-300 ${isMinimized ? 'h-16' : 'h-[600px]'}`}>
+      <Card className={`w-80 sm:w-96 shadow-xl transition-all duration-300 ${isMinimized ? 'h-16' : 'h-[500px] sm:h-[600px]'}`}>
         {/* Header */}
         <CardHeader className="flex flex-row items-center justify-between p-4 bg-green-600 text-white rounded-t-lg">
           <div className="flex items-center space-x-2">

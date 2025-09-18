@@ -3,13 +3,88 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, MapPin, Activity, Settings, Eye, Trash2, Shield } from 'lucide-react';
+import { Users, MapPin, Activity, Settings, Eye, Trash2, Shield, Phone } from 'lucide-react';
 import { useAuth } from './AuthContext';
-import { authService } from '@/lib/auth';
+import { TwilioSetup } from './setup/TwilioSetup';
+import { TwilioDebug } from './TwilioDebug';
+import { EnvChecker } from './EnvChecker';
 
 export const AdminDashboard = () => {
   const { user, logout } = useAuth();
-  const [farmers] = useState(authService.getAllFarmers());
+  
+  // Mock farmers data for admin dashboard
+  const [farmers] = useState([
+    {
+      id: '1',
+      name: 'Rajesh Kumar',
+      phone: '9876543210',
+      email: 'rajesh.kumar@email.com',
+      location: 'Thiruvananthapuram',
+      farmLocation: 'Thiruvananthapuram',
+      farmSize: 2.5,
+      cropType: 'Rice',
+      cropTypes: ['Rice', 'Vegetables'],
+      role: 'farmer',
+      status: 'Active',
+      joinedAt: '2024-01-15'
+    },
+    {
+      id: '2',
+      name: 'Priya Sharma',
+      phone: '9876543211',
+      email: 'priya.sharma@email.com',
+      location: 'Kochi',
+      farmLocation: 'Kochi',
+      farmSize: 3.2,
+      cropType: 'Vegetables',
+      cropTypes: ['Vegetables', 'Spices'],
+      role: 'farmer',
+      status: 'Active',
+      joinedAt: '2024-02-10'
+    },
+    {
+      id: '3',
+      name: 'Amit Singh',
+      phone: '9876543212',
+      email: 'amit.singh@email.com',
+      location: 'Kozhikode',
+      farmLocation: 'Kozhikode',
+      farmSize: 1.8,
+      cropType: 'Spices',
+      cropTypes: ['Spices', 'Coconut'],
+      role: 'farmer',
+      status: 'Active',
+      joinedAt: '2024-03-05'
+    },
+    {
+      id: '4',
+      name: 'Sunita Verma',
+      phone: '9876543213',
+      email: 'sunita.verma@email.com',
+      location: 'Thrissur',
+      farmLocation: 'Thrissur',
+      farmSize: 4.1,
+      cropType: 'Coconut',
+      cropTypes: ['Coconut', 'Rubber'],
+      role: 'farmer',
+      status: 'Active',
+      joinedAt: '2024-01-20'
+    },
+    {
+      id: '5',
+      name: 'Vikram Nair',
+      phone: '9876543214',
+      email: 'vikram.nair@email.com',
+      location: 'Kannur',
+      farmLocation: 'Kannur',
+      farmSize: 2.8,
+      cropType: 'Rubber',
+      cropTypes: ['Rubber', 'Spices'],
+      role: 'farmer',
+      status: 'Active',
+      joinedAt: '2024-02-28'
+    }
+  ]);
 
   const stats = [
     { label: 'Total Farmers', value: farmers.length, icon: Users, color: 'text-blue-600' },
@@ -73,6 +148,9 @@ export const AdminDashboard = () => {
             <TabsTrigger value="farmers">Farmer Management</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="system">System Settings</TabsTrigger>
+            <TabsTrigger value="twilio">Twilio Setup</TabsTrigger>
+            <TabsTrigger value="twilio-debug">Twilio Debug</TabsTrigger>
+            <TabsTrigger value="env-checker">Env Checker</TabsTrigger>
           </TabsList>
 
           <TabsContent value="farmers" className="space-y-4">
@@ -226,6 +304,18 @@ export const AdminDashboard = () => {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="twilio" className="space-y-4">
+            <TwilioSetup />
+          </TabsContent>
+
+          <TabsContent value="twilio-debug" className="space-y-4">
+            <TwilioDebug />
+          </TabsContent>
+
+          <TabsContent value="env-checker" className="space-y-4">
+            <EnvChecker />
           </TabsContent>
         </Tabs>
       </main>

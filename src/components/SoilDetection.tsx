@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Activity, 
   Upload, 
@@ -13,10 +14,15 @@ import {
   Droplets,
   Zap,
   FileImage,
-  TestTube
+  TestTube,
+  Database,
+  MapPin,
+  Leaf
 } from 'lucide-react';
 import { useLanguage } from './LanguageContext';
 import { useTranslation } from '@/lib/translations';
+import { soilAnalysisTemplates, SoilAnalysisTemplate, getRandomSoilTemplate } from '@/lib/soilTemplates';
+import { getMockAnalysisResult } from '@/lib/imageAnalysisMockData';
 
 interface SoilAnalysisResult {
   ph: number;
@@ -37,6 +43,8 @@ export const SoilDetection: React.FC = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<SoilAnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<string>('');
+  const [useTemplate, setUseTemplate] = useState(false);
 
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -55,8 +63,8 @@ export const SoilDetection: React.FC = () => {
   };
 
   const handleAnalyze = async () => {
-    if (!selectedImage) {
-      setError('Please select an image first');
+    if (!useTemplate && !selectedImage) {
+      setError('Please select an image or choose a template first');
       return;
     }
 
@@ -67,25 +75,79 @@ export const SoilDetection: React.FC = () => {
       // Simulate API call to backend
       await new Promise(resolve => setTimeout(resolve, 3000));
       
-      // Mock analysis result
-      const mockResult: SoilAnalysisResult = {
-        ph: 6.8,
-        moisture: 45,
-        nitrogen: 78,
-        phosphorus: 65,
-        potassium: 82,
-        organicMatter: 3.2,
-        healthScore: 85,
-        recommendations: [
-          'Soil pH is optimal for most crops (6.5-7.0)',
-          'Moisture level is good for plant growth',
-          'Consider adding organic compost to improve soil structure',
-          'Phosphorus levels could be increased for better root development',
-          'Regular soil testing recommended every 6 months'
-        ]
-      };
+      let result: SoilAnalysisResult;
+      
+      if (useTemplate) {
+        // Use selected template or random template
+        const template = selectedTemplate 
+          ? soilAnalysisTemplates.find(t => t.id === selectedTemplate)
+          : getRandomSoilTemplate();
+        
+        if (!template) {
+          throw new Error('Template not found');
+        }
+        
+        result = {
+          ph: template.ph,
+          moisture: template.moisture,
+          nitrogen: template.nitrogen,
+          phosphorus: template.phosphorus,
+          potassium: template.potassium,
+          organicMatter: template.organicMatter,
+          healthScore: template.healthScore,
+          recommendations: template.recommendations
+        };
+      } else {
+        // Try backend for uploaded image
+        try {
+          const formData = new FormData();
+          formData.append('file', selectedImage);
+          
+          const response = await fetch('http://localhost:8001/analyze/soil-health', {
+            method: 'POST',
+            body: formData,
+          });
 
-      setAnalysisResult(mockResult);
+          if (response.ok) {
+            const backendResult = await response.json();
+            result = {
+              ph: backendResult.results.ph || 6.8,
+              moisture: backendResult.results.moisture || 45,
+              nitrogen: backendResult.results.nitrogen || 78,
+              phosphorus: backendResult.results.phosphorus || 65,
+              potassium: backendResult.results.potassium || 82,
+              organicMatter: backendResult.results.organicMatter || 3.2,
+              healthScore: backendResult.results.healthScore || 85,
+              recommendations: backendResult.results.recommendations || []
+            };
+          } else {
+            throw new Error('Backend not available');
+          }
+        } catch (backendError) {
+          console.log('Backend not available, using mock data for soil analysis');
+          
+          // Use mock data when backend is not available
+          const mockAnalysisResult = getMockAnalysisResult('soil-health');
+          result = {
+            ph: mockAnalysisResult.results.nutrient_analysis?.nitrogen.value ? 6.8 : 6.8,
+            moisture: 45,
+            nitrogen: mockAnalysisResult.results.nutrient_analysis?.nitrogen.value || 78,
+            phosphorus: mockAnalysisResult.results.nutrient_analysis?.phosphorus.value || 65,
+            potassium: mockAnalysisResult.results.nutrient_analysis?.potassium.value || 82,
+            organicMatter: 3.2,
+            healthScore: 85,
+            recommendations: mockAnalysisResult.results.recommendations || [
+              'Soil pH is optimal for most crops (6.5-7.0)',
+              'Moisture level is good for plant growth',
+              'Consider adding organic compost to improve soil structure',
+              'Phosphorus levels could be increased for better root development',
+              'Regular soil testing recommended every 6 months'
+            ]
+          };
+        }
+      }
+
+      setAnalysisResult(result);
     } catch (err) {
       setError('Failed to analyze soil. Please try again.');
     } finally {
@@ -117,18 +179,107 @@ export const SoilDetection: React.FC = () => {
         </p>
       </div>
 
+      {/* Template Selection Section */}
+      <Card className="mb-6 animate-in slide-in-from-top duration-300">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Database className="h-5 w-5" />
+            Quick Analysis Templates
+          </CardTitle>
+          <CardDescription>
+            Choose from pre-defined soil analysis templates or upload your own image
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center space-x-4">
+            <Button
+              variant={useTemplate ? "default" : "outline"}
+              onClick={() => {
+                setUseTemplate(true);
+                setSelectedImage(null);
+                setImagePreview(null);
+                setAnalysisResult(null);
+                setError(null);
+              }}
+              className="flex items-center gap-2"
+            >
+              <Database className="h-4 w-4" />
+              Use Template
+            </Button>
+            <Button
+              variant={!useTemplate ? "default" : "outline"}
+              onClick={() => {
+                setUseTemplate(false);
+                setSelectedTemplate('');
+                setAnalysisResult(null);
+                setError(null);
+              }}
+              className="flex items-center gap-2"
+            >
+              <Upload className="h-4 w-4" />
+              Upload Image
+            </Button>
+          </div>
+          
+          {useTemplate && (
+            <div className="space-y-3">
+              <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a soil analysis template" />
+                </SelectTrigger>
+                <SelectContent>
+                  {soilAnalysisTemplates.map((template) => (
+                    <SelectItem key={template.id} value={template.id}>
+                      <div className="flex items-center gap-2">
+                        <Leaf className="h-4 w-4" />
+                        <span>{template.name}</span>
+                        <Badge variant="outline" className="ml-2">
+                          {template.soilType}
+                        </Badge>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              {selectedTemplate && (
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  {(() => {
+                    const template = soilAnalysisTemplates.find(t => t.id === selectedTemplate);
+                    return template ? (
+                      <div className="space-y-2">
+                        <h4 className="font-medium text-gray-900">{template.name}</h4>
+                        <p className="text-sm text-gray-600">{template.description}</p>
+                        <div className="flex items-center gap-4 text-xs text-gray-500">
+                          <span className="flex items-center gap-1">
+                            <MapPin className="h-3 w-3" />
+                            {template.location}
+                          </span>
+                          <span>Health Score: {template.healthScore}%</span>
+                        </div>
+                      </div>
+                    ) : null;
+                  })()}
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Upload Section */}
-        <Card className="animate-in slide-in-from-left duration-500">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Upload className="h-5 w-5" />
-              {t.uploadImage}
-            </CardTitle>
-            <CardDescription>
-              Take a clear photo of your soil sample for analysis
-            </CardDescription>
-          </CardHeader>
+        {!useTemplate && (
+          <Card className="animate-in slide-in-from-left duration-500">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Upload className="h-5 w-5" />
+                {t.uploadImage}
+              </CardTitle>
+              <CardDescription>
+                Take a clear photo of your soil sample for analysis
+              </CardDescription>
+            </CardHeader>
           <CardContent className="space-y-4">
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
               {imagePreview ? (
@@ -194,6 +345,7 @@ export const SoilDetection: React.FC = () => {
             </Button>
           </CardContent>
         </Card>
+        )}
 
         {/* Results Section */}
         <Card className="animate-in slide-in-from-right duration-500">
@@ -207,6 +359,27 @@ export const SoilDetection: React.FC = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {useTemplate && (
+              <div className="mb-4">
+                <Button
+                  onClick={handleAnalyze}
+                  disabled={!selectedTemplate || isAnalyzing}
+                  className="w-full bg-green-600 hover:bg-green-700"
+                >
+                  {isAnalyzing ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Analyzing Template...
+                    </>
+                  ) : (
+                    <>
+                      <TestTube className="h-4 w-4 mr-2" />
+                      Analyze Selected Template
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
             {analysisResult ? (
               <div className="space-y-6 animate-in fade-in duration-300">
                 {/* Overall Health Score */}

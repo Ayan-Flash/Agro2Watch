@@ -1,4 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { auth, sendOTP as firebaseSendOTP, verifyOTP as firebaseVerifyOTP, createUserProfile, getUserProfile, updateUserProfile } from '@/lib/firebase';
+import { onAuthStateChanged, signOut as firebaseSignOut, User as FirebaseUser } from 'firebase/auth';
+import { sendTwilioOTP, sendTwilioOTPVerify, verifyTwilioOTP, generateOTP, validatePhoneNumber, isTwilioConfigured } from '@/lib/twilioService';
+import { sendTwilioOTPDirect, sendTwilioOTPVerifyDirect, verifyTwilioOTPDirect, generateOTPDirect, validatePhoneNumberDirect, isTwilioConfiguredDirect } from '@/lib/twilioDirect';
 
 interface User {
   id: string;
@@ -21,8 +25,8 @@ interface AuthContextType {
   login: (phone: string, password: string) => Promise<boolean>;
   loginWithAadhar: (aadhar: string, otp: string) => Promise<boolean>;
   signup: (phone: string, password: string, name: string) => Promise<boolean>;
-  sendOTP: (phone: string) => Promise<boolean>;
-  verifyOTP: (phone: string, otp: string) => Promise<boolean>;
+  sendOTP: (phone: string) => Promise<{ success: boolean; verificationId?: string; error?: string }>;
+  verifyOTP: (phone: string, otp: string, verificationId?: string) => Promise<boolean>;
   sendAadharOTP: (aadhar: string) => Promise<boolean>;
   completeProfile: (farmSize: number, cropType: 'corn' | 'vegetables' | 'both') => Promise<void>;
   updateProfile: (updates: {
@@ -52,38 +56,71 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [verificationId, setVerificationId] = useState<string | null>(null);
 
-  // Check for existing session on mount
+  // Listen to Firebase auth state changes
   useEffect(() => {
-    const savedUser = localStorage.getItem('agrowatch_user');
-    if (savedUser) {
-      try {
-        const userData = JSON.parse(savedUser);
-        setUser(userData);
-      } catch (error) {
-        console.error('Error parsing saved user:', error);
-        localStorage.removeItem('agrowatch_user');
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
+      if (firebaseUser) {
+        try {
+          // Get user profile from Firestore
+          const profileResult = await getUserProfile(firebaseUser.uid);
+          if (profileResult.success && profileResult.data) {
+            const userData = profileResult.data;
+            setUser({
+              id: userData.uid,
+              phone: userData.phone || firebaseUser.phoneNumber || '',
+              name: userData.name || userData.displayName || '',
+              location: userData.location || '',
+              farmSize: userData.farmSize || 0,
+              cropType: userData.cropType || 'corn',
+              isProfileComplete: userData.isProfileComplete || false,
+              verified: true,
+              joinedAt: userData.createdAt || new Date().toISOString(),
+              role: userData.role || 'farmer'
+            });
+          } else {
+            // Create basic user profile if not exists
+            const basicUser: User = {
+              id: firebaseUser.uid,
+              phone: firebaseUser.phoneNumber || '',
+              name: firebaseUser.displayName || '',
+              isProfileComplete: false,
+              verified: true,
+              joinedAt: new Date().toISOString(),
+              role: 'farmer'
+            };
+            setUser(basicUser);
+          }
+        } catch (error) {
+          console.error('Error loading user profile:', error);
+          // Fallback to basic user data
+          const basicUser: User = {
+            id: firebaseUser.uid,
+            phone: firebaseUser.phoneNumber || '',
+            name: firebaseUser.displayName || '',
+            isProfileComplete: false,
+            verified: true,
+            joinedAt: new Date().toISOString(),
+            role: 'farmer'
+          };
+          setUser(basicUser);
+        }
+      } else {
+        setUser(null);
       }
-    }
-    setIsLoading(false);
-  }, []);
+      setIsLoading(false);
+    });
 
-  // Save user to localStorage whenever user state changes
-  useEffect(() => {
-    if (user) {
-      localStorage.setItem('agrowatch_user', JSON.stringify(user));
-    }
-  }, [user]);
+    return () => unsubscribe();
+  }, []);
 
   const login = async (phone: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Demo accounts for testing
+      // For demo purposes, allow specific phone numbers
       if (phone === '9000012345') {
-        // Demo farmer account - accepts any password
+        // Demo farmer account
         const demoFarmer: User = {
           id: 'demo_farmer_001',
           phone: '9000012345',
@@ -109,17 +146,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           isProfileComplete: true,
           verified: true,
           joinedAt: new Date().toISOString(),
-          role: 'admin' // Add admin role
+          role: 'admin'
         };
         setUser(demoAdmin);
-        return true;
-      }
-      
-      const users = JSON.parse(localStorage.getItem('agrowatch_users') || '[]');
-      const existingUser = users.find((u: any) => u.phone === phone && u.password === password);
-      
-      if (existingUser) {
-        setUser(existingUser);
         return true;
       }
       
@@ -135,30 +164,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const loginWithAadhar = async (aadhar: string, otp: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      // Simulate API call for Aadhar verification
+      // Simulate Aadhar verification
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Mock OTP verification (in real app, verify with government API)
       if (otp === '123456') {
-        const users = JSON.parse(localStorage.getItem('agrowatch_users') || '[]');
-        let existingUser = users.find((u: any) => u.aadhar === aadhar);
-        
-        if (!existingUser) {
-          // Create new user with Aadhar
-          existingUser = {
-            id: Date.now().toString(),
-            aadhar,
-            phone: '', // Will be updated later
-            name: 'Aadhar User',
-            verified: true,
-            isProfileComplete: false,
-            joinedAt: new Date().toISOString()
-          };
-          users.push(existingUser);
-          localStorage.setItem('agrowatch_users', JSON.stringify(users));
-        }
-        
-        setUser(existingUser);
+        const aadharUser: User = {
+          id: `aadhar_${aadhar}`,
+          aadhar,
+          phone: '',
+          name: 'Aadhar User',
+          verified: true,
+          isProfileComplete: false,
+          joinedAt: new Date().toISOString()
+        };
+        setUser(aadharUser);
         return true;
       }
       
@@ -174,27 +193,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const signup = async (phone: string, password: string, name: string): Promise<boolean> => {
     setIsLoading(true);
     try {
+      // This would typically create a user in Firebase
+      // For now, we'll just simulate success
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      const users = JSON.parse(localStorage.getItem('agrowatch_users') || '[]');
-      const existingUser = users.find((u: any) => u.phone === phone);
-      
-      if (existingUser) {
-        return false; // User already exists
-      }
-
       const newUser: User = {
-        id: Date.now().toString(),
+        id: `user_${Date.now()}`,
         phone,
         name,
-        verified: false, // Will be verified via OTP
+        verified: false,
         isProfileComplete: false,
         joinedAt: new Date().toISOString()
       };
-
-      users.push({ ...newUser, password });
-      localStorage.setItem('agrowatch_users', JSON.stringify(users));
       
+      setUser(newUser);
       return true;
     } catch (error) {
       console.error('Signup error:', error);
@@ -204,75 +216,150 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const sendOTP = async (phone: string): Promise<boolean> => {
+  const sendOTP = async (phone: string): Promise<{ success: boolean; verificationId?: string; error?: string }> => {
     try {
-      // Simulate sending OTP via SMS
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log('🔍 Starting OTP send process for:', phone);
       
-      // In real app, integrate with SMS service like Twilio, AWS SNS, etc.
-      const otp = Math.floor(100000 + Math.random() * 900000).toString();
-      
-      // Store OTP temporarily (in real app, store server-side with expiration)
-      localStorage.setItem(`otp_${phone}`, JSON.stringify({
-        otp,
-        timestamp: Date.now(),
-        expires: Date.now() + 5 * 60 * 1000 // 5 minutes
-      }
-      )
-      )
-      // Use a simple object to store OTPs
-      if (typeof window !== 'undefined') {
-        const otpStore = JSON.parse(localStorage.getItem('temp_otp_store') || '{}');
-        otpStore[phone] = {
-          otp,
-          timestamp: Date.now(),
-          expires: Date.now() + 5 * 60 * 1000 // 5 minutes
+      // Validate phone number
+      if (!validatePhoneNumber(phone)) {
+        console.error('❌ Invalid phone number format:', phone);
+        return {
+          success: false,
+          error: 'Invalid phone number format'
         };
-        localStorage.setItem('temp_otp_store', JSON.stringify(otpStore));
       }
+
+      // Check Twilio configuration
+      const hasTwilioConfig = isTwilioConfigured() || isTwilioConfiguredDirect();
+      console.log('🔧 Twilio configured:', hasTwilioConfig);
       
-      console.log(`OTP for ${phone}: ${otp}`); // For testing
-      return true;
-    } catch (error) {
-      console.error('Send OTP error:', error);
-      return false;
+      if (hasTwilioConfig) {
+        console.log('📱 Using Twilio for OTP sending');
+        
+        try {
+          // Try Twilio Verify service first (recommended)
+          console.log('🔄 Attempting Twilio Verify...');
+          const twilioVerifyResult = await sendTwilioOTPVerifyDirect(phone);
+          console.log('📊 Twilio Verify result:', twilioVerifyResult);
+          
+          if (twilioVerifyResult.success) {
+            setVerificationId(twilioVerifyResult.sid || '');
+            console.log('✅ Twilio Verify OTP sent successfully');
+            return {
+              success: true,
+              verificationId: twilioVerifyResult.sid
+            };
+          }
+        } catch (verifyError) {
+          console.warn('⚠️ Twilio Verify failed, trying direct SMS:', verifyError);
+        }
+        
+        try {
+          // Fallback to direct SMS
+          console.log('📲 Attempting direct Twilio SMS...');
+          const otpCode = generateOTPDirect();
+          console.log('🔢 Generated OTP:', otpCode);
+          
+          const twilioResult = await sendTwilioOTPDirect(phone, otpCode);
+          console.log('📊 Direct SMS result:', twilioResult);
+          
+          if (twilioResult.success) {
+            setVerificationId(otpCode); // Store OTP for verification
+            console.log('✅ Direct SMS OTP sent successfully');
+            return {
+              success: true,
+              verificationId: otpCode
+            };
+          } else {
+            console.error('❌ Direct SMS failed:', twilioResult.error);
+          }
+        } catch (smsError) {
+          console.error('❌ Direct SMS error:', smsError);
+        }
+      }
+
+      // Fallback to Firebase if Twilio not configured or fails
+      console.log('🔥 Using Firebase for OTP sending (fallback)');
+      const formattedPhone = phone.startsWith('+') ? phone : `+91${phone}`;
+      
+      const result = await firebaseSendOTP(formattedPhone);
+      console.log('📊 Firebase result:', result);
+      
+      if (result.success && result.verificationId) {
+        setVerificationId(result.verificationId);
+        console.log('✅ Firebase OTP sent successfully');
+      }
+      return result;
+    } catch (error: any) {
+      console.error('❌ Send OTP error:', error);
+      return {
+        success: false,
+        error: error.message || 'Failed to send OTP'
+      };
     }
   };
 
-  const verifyOTP = async (phone: string, otp: string): Promise<boolean> => {
+  const verifyOTP = async (phone: string, otp: string, verificationId?: string): Promise<boolean> => {
     try {
-      const otpStore = JSON.parse(localStorage.getItem('temp_otp_store') || '{}');
-      const storedData = otpStore[phone];
+      console.log('🔍 Starting OTP verification for:', phone, 'OTP:', otp);
       
-      if (!storedData) return false;
+      // Check Twilio configuration
+      const hasTwilioConfig = isTwilioConfigured() || isTwilioConfiguredDirect();
+      console.log('🔧 Twilio configured for verification:', hasTwilioConfig);
       
-      const { otp: correctOTP, expires } = storedData;
-      
-      if (Date.now() > expires) {
-        delete otpStore[phone];
-        localStorage.setItem('temp_otp_store', JSON.stringify(otpStore));
-        return false; // OTP expired
-      }
-      
-      if (otp === correctOTP) {
-        // Mark user as verified
-        const users = JSON.parse(localStorage.getItem('agrowatch_users') || '[]');
-        const userIndex = users.findIndex((u: any) => u.phone === phone);
+      if (hasTwilioConfig) {
+        console.log('📱 Using Twilio for OTP verification');
         
-        if (userIndex !== -1) {
-          users[userIndex].verified = true;
-          localStorage.setItem('agrowatch_users', JSON.stringify(users));
-          setUser(users[userIndex]);
+        try {
+          // Try Twilio Verify service first
+          console.log('🔄 Attempting Twilio Verify...');
+          const twilioResult = await verifyTwilioOTPDirect(phone, otp);
+          console.log('📊 Twilio Verify result:', twilioResult);
+          
+          if (twilioResult.success) {
+            // Create a mock user session for Twilio verification
+            const mockUser: User = {
+              id: `twilio_${Date.now()}`,
+              phone: phone,
+              name: '',
+              isProfileComplete: false,
+              verified: true,
+              joinedAt: new Date().toISOString(),
+              role: 'farmer'
+            };
+            setUser(mockUser);
+            console.log('✅ Twilio Verify OTP verified successfully');
+            return true;
+          } else {
+            console.error('❌ Twilio Verify failed:', twilioResult.error);
+          }
+        } catch (verifyError) {
+          console.error('❌ Twilio Verify error:', verifyError);
         }
-        
-        delete otpStore[phone];
-        localStorage.setItem('temp_otp_store', JSON.stringify(otpStore));
+      }
+
+      // Fallback to Firebase verification
+      console.log('🔥 Using Firebase for OTP verification (fallback)');
+      const vid = verificationId || verificationId;
+      if (!vid) {
+        console.error('❌ No verification ID available');
+        return false;
+      }
+
+      const result = await firebaseVerifyOTP(vid, otp);
+      console.log('📊 Firebase verification result:', result);
+      
+      if (result.success && result.user) {
+        console.log('✅ Firebase OTP verified successfully');
+        // User is now authenticated via Firebase
+        // The onAuthStateChanged listener will handle setting the user state
         return true;
       }
       
+      console.error('❌ OTP verification failed');
       return false;
     } catch (error) {
-      console.error('Verify OTP error:', error);
+      console.error('❌ Verify OTP error:', error);
       return false;
     }
   };
@@ -302,15 +389,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         isProfileComplete: true
       };
       
-      // Update in localStorage
-      const users = JSON.parse(localStorage.getItem('agrowatch_users') || '[]');
-      const userIndex = users.findIndex((u: any) => u.id === user.id);
-      
-      if (userIndex !== -1) {
-        users[userIndex] = { ...users[userIndex], farmSize, cropType, isProfileComplete: true };
-        localStorage.setItem('agrowatch_users', JSON.stringify(users));
-      }
-      
       setUser(updatedUser);
     } catch (error) {
       console.error('Complete profile error:', error);
@@ -337,13 +415,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         isProfileComplete: updates.farmSize !== undefined || updates.cropType !== undefined ? true : user.isProfileComplete
       };
 
-      const users = JSON.parse(localStorage.getItem('agrowatch_users') || '[]');
-      const userIndex = users.findIndex((u: any) => u.id === user.id);
-      if (userIndex !== -1) {
-        users[userIndex] = { ...users[userIndex], ...updates, isProfileComplete: updatedUser.isProfileComplete };
-        localStorage.setItem('agrowatch_users', JSON.stringify(users));
-      }
-
       setUser(updatedUser);
     } catch (error) {
       console.error('Update profile error:', error);
@@ -351,9 +422,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('agrowatch_user');
+  const logout = async () => {
+    try {
+      await firebaseSignOut(auth);
+      setUser(null);
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Fallback: clear local state
+      setUser(null);
+    }
   };
 
   const value: AuthContextType = {
