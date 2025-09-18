@@ -10,18 +10,12 @@ import {
 import { useLanguage } from './LanguageContext';
 import { useAuth } from './AuthContext';
 import { 
-  Home, 
   Leaf, 
-  Bug, 
-  Beaker, 
-  Building2,
   User, 
   LogOut, 
-  Globe, 
+  Globe,
   Menu,
-  X,
-  Bell,
-  Settings
+  X
 } from 'lucide-react';
 
 interface NavigationProps {
@@ -37,50 +31,39 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, onViewChange }) =>
   const navigationItems = [
     {
       id: 'dashboard',
-      label: t('nav.dashboard'),
-      icon: <Home className="h-4 w-4" />,
-      color: 'text-blue-600'
+      label: 'Dashboard',
+      active: currentView === 'dashboard'
     },
     {
       id: 'crop-detection',
-      label: t('nav.cropDetection'),
-      icon: <Leaf className="h-4 w-4" />,
-      color: 'text-green-600'
-    },
-    {
-      id: 'pest-detection',
-      label: t('nav.pestDetection'),
-      icon: <Bug className="h-4 w-4" />,
-      color: 'text-red-600'
+      label: 'Crop Detection',
+      active: currentView === 'crop-detection'
     },
     {
       id: 'soil-detection',
-      label: t('nav.soilDetection'),
-      icon: <Beaker className="h-4 w-4" />,
-      color: 'text-amber-600'
+      label: 'Soil Detection',
+      active: currentView === 'soil-detection'
     },
     {
-      id: 'government-schemes',
-      label: t('nav.governmentSchemes'),
-      icon: <Building2 className="h-4 w-4" />,
-      color: 'text-orange-600'
+      id: 'pest-detection',
+      label: 'Pest Detection',
+      active: currentView === 'pest-detection'
     },
     {
-      id: 'profile',
-      label: t('nav.profile'),
-      icon: <User className="h-4 w-4" />,
-      color: 'text-indigo-600'
+      id: 'farmer-registration',
+      label: 'Farmer Registration',
+      active: currentView === 'farmer-registration'
     }
   ];
 
   const languages = [
-    { code: 'en', name: 'English', flag: '🇺🇸' },
-    { code: 'hi', name: 'हिंदी', flag: '🇮🇳' },
-    { code: 'ta', name: 'தமிழ்', flag: '🇮🇳' },
-    { code: 'te', name: 'తెలుగు', flag: '🇮🇳' },
-    { code: 'bn', name: 'বাংলা', flag: '🇮🇳' },
-    { code: 'mr', name: 'मराठी', flag: '🇮🇳' },
-    { code: 'gu', name: 'ગુજરાતી', flag: '🇮🇳' }
+    { code: 'en', name: 'English' },
+    { code: 'hi', name: 'हिंदी' },
+    { code: 'ta', name: 'தமிழ்' },
+    { code: 'te', name: 'తెలుగు' },
+    { code: 'bn', name: 'বাংলা' },
+    { code: 'mr', name: 'मराठी' },
+    { code: 'gu', name: 'ગુજરાતી' }
   ];
 
   const handleLogout = () => {
@@ -94,76 +77,55 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, onViewChange }) =>
   };
 
   return (
-    <nav className="bg-white shadow-lg border-b border-gray-200 sticky top-0 z-50">
+    <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo and Brand */}
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center">
-              <Leaf className="h-8 w-8 text-green-600" />
-              <span className="ml-2 text-xl font-bold text-gray-900">AgroWatch</span>
-            </div>
-            <Badge className="hidden sm:inline-flex bg-green-100 text-green-800 border-green-200">
-              AI-Powered
-            </Badge>
+          {/* Logo */}
+          <div className="flex items-center space-x-2 cursor-pointer" onClick={() => handleNavigation('dashboard')}>
+            <Leaf className="h-6 w-6 text-green-600" />
+            <span className="text-xl font-bold text-gray-900">AgroWatch</span>
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-1">
+          <div className="hidden lg:flex items-center space-x-8">
             {navigationItems.map((item) => (
-              <Button
+              <button
                 key={item.id}
-                variant={currentView === item.id ? "default" : "ghost"}
-                size="sm"
                 onClick={() => handleNavigation(item.id)}
-                className={`flex items-center space-x-2 ${
-                  currentView === item.id 
-                    ? 'bg-green-600 text-white hover:bg-green-700' 
-                    : `hover:bg-gray-100 ${item.color}`
+                className={`text-sm font-medium transition-colors relative ${
+                  item.active 
+                    ? 'text-green-600' 
+                    : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
-                {item.icon}
-                <span className="hidden lg:inline">{item.label}</span>
-              </Button>
+                {item.label}
+                {item.active && (
+                  <div className="absolute -bottom-4 left-0 right-0 h-0.5 bg-green-600"></div>
+                )}
+              </button>
             ))}
           </div>
 
-          {/* Desktop Right Side */}
-          <div className="hidden md:flex items-center space-x-3">
-            {/* Notifications */}
-            <Button variant="ghost" size="sm" className="relative">
-              <Bell className="h-4 w-4" />
-              <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center p-0">
-                3
-              </Badge>
-            </Button>
-
+          {/* Right Side */}
+          <div className="flex items-center space-x-4">
             {/* Language Selector */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="flex items-center space-x-2">
                   <Globe className="h-4 w-4" />
-                  <span className="hidden lg:inline">
-                    {languages.find(lang => lang.code === language)?.name}
+                  <span className="hidden sm:inline">
+                    {languages.find(lang => lang.code === language)?.name || 'English'}
                   </span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuContent align="end" className="w-40">
                 {languages.map((lang) => (
                   <DropdownMenuItem
                     key={lang.code}
                     onClick={() => setLanguage(lang.code)}
-                    className={`flex items-center space-x-2 ${
-                      language === lang.code ? 'bg-green-50 text-green-700' : ''
-                    }`}
+                    className={language === lang.code ? 'bg-green-50 text-green-700' : ''}
                   >
-                    <span>{lang.flag}</span>
-                    <span>{lang.name}</span>
-                    {language === lang.code && (
-                      <Badge className="ml-auto bg-green-100 text-green-800">
-                        ✓
-                      </Badge>
-                    )}
+                    {lang.name}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
@@ -174,105 +136,65 @@ const Navigation: React.FC<NavigationProps> = ({ currentView, onViewChange }) =>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="flex items-center space-x-2">
                   <User className="h-4 w-4" />
-                  <span className="hidden lg:inline">{user?.name || 'Farmer'}</span>
+                  <span className="hidden sm:inline">{user?.phone || '9384357744'}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem onClick={() => handleNavigation('profile')}>
                   <User className="mr-2 h-4 w-4" />
-                  {t('nav.profile')}
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Settings className="mr-2 h-4 w-4" />
-                  Settings
+                  Profile
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleLogout} className="text-red-600">
                   <LogOut className="mr-2 h-4 w-4" />
-                  {t('nav.logout')}
+                  Logout
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          </div>
 
-          {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center space-x-2">
-            <Button variant="ghost" size="sm">
-              <Bell className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </Button>
+            {/* Mobile Menu Button */}
+            <div className="lg:hidden">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              >
+                {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </Button>
+            </div>
           </div>
         </div>
 
         {/* Mobile Navigation Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden border-t border-gray-200 py-4">
+          <div className="lg:hidden border-t border-gray-200 py-4">
             <div className="space-y-2">
               {navigationItems.map((item) => (
-                <Button
+                <button
                   key={item.id}
-                  variant={currentView === item.id ? "default" : "ghost"}
-                  size="sm"
                   onClick={() => handleNavigation(item.id)}
-                  className={`w-full justify-start flex items-center space-x-2 ${
-                    currentView === item.id 
-                      ? 'bg-green-600 text-white hover:bg-green-700' 
-                      : `hover:bg-gray-100 ${item.color}`
+                  className={`block w-full text-left px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                    item.active 
+                      ? 'bg-green-50 text-green-600' 
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   }`}
                 >
-                  {item.icon}
-                  <span>{item.label}</span>
-                </Button>
+                  {item.label}
+                </button>
               ))}
               
-              {/* Mobile Language Selector */}
               <div className="pt-4 border-t border-gray-200">
-                <p className="text-sm font-medium text-gray-700 mb-2 px-3">
-                  {t('nav.language')}
-                </p>
-                <div className="grid grid-cols-2 gap-2">
-                  {languages.map((lang) => (
-                    <Button
-                      key={lang.code}
-                      variant={language === lang.code ? "default" : "ghost"}
-                      size="sm"
-                      onClick={() => setLanguage(lang.code)}
-                      className={`justify-start ${
-                        language === lang.code ? 'bg-green-600 text-white' : ''
-                      }`}
-                    >
-                      <span className="mr-2">{lang.flag}</span>
-                      <span className="text-xs">{lang.name}</span>
-                    </Button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Mobile User Actions */}
-              <div className="pt-4 border-t border-gray-200 space-y-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
+                <button
                   onClick={() => handleNavigation('profile')}
-                  className="w-full justify-start"
+                  className="block w-full text-left px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md"
                 >
-                  <User className="mr-2 h-4 w-4" />
-                  {t('nav.profile')}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
+                  Profile
+                </button>
+                <button
                   onClick={handleLogout}
-                  className="w-full justify-start text-red-600"
+                  className="block w-full text-left px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-md"
                 >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  {t('nav.logout')}
-                </Button>
+                  Logout
+                </button>
               </div>
             </div>
           </div>

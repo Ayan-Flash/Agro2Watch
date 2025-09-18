@@ -33,6 +33,22 @@ export const EnvironmentalPanel = () => {
       optimal: [50, 85]
     },
     {
+      icon: Wind,
+      label: 'Pressure',
+      value: (mockEnvironmentalData as any).pressure || 1013,
+      unit: ' hPa',
+      color: 'bg-gray-500',
+      optimal: [980, 1030]
+    },
+    {
+      icon: Wind,
+      label: 'Wind Speed',
+      value: (mockEnvironmentalData as any).windSpeed || 5,
+      unit: ' m/s',
+      color: 'bg-slate-500',
+      optimal: [0, 12]
+    },
+    {
       icon: Leaf,
       label: t('leafWetness'),
       value: mockEnvironmentalData.leafWetness,
@@ -63,9 +79,13 @@ export const EnvironmentalPanel = () => {
       <CardContent className="space-y-4">
         {sensors.map((sensor, index) => {
           const Icon = sensor.icon;
-          const progressValue = sensor.label.includes('Temperature') 
-            ? (sensor.value / 50) * 100 
-            : sensor.value;
+          const progressValue = sensor.label.includes('Temperature')
+            ? (sensor.value / 50) * 100
+            : sensor.label.includes('Pressure')
+              ? Math.min(100, Math.max(0, ((sensor.value - 950) / (1050 - 950)) * 100))
+              : sensor.label.includes('Wind Speed')
+                ? Math.min(100, (sensor.value / 20) * 100)
+                : sensor.value;
           
           return (
             <div key={index} className="space-y-2">

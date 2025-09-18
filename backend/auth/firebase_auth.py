@@ -8,6 +8,7 @@ from config import settings
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 import httpx
+from twilio.rest import Client as TwilioClient
 
 class FirebaseAuthManager:
     """Firebase Authentication Manager"""
@@ -57,12 +58,15 @@ class FirebaseAuthManager:
     async def send_otp(self, phone_number: str) -> Dict[str, Any]:
         """Send OTP to phone number"""
         try:
+            # Prefer Twilio if configured
+            if settings.TWILIO_ACCOUNT_SID and settings.TWILIO_AUTH_TOKEN and settings.TWILIO_FROM_NUMBER:
+                return await self._send_otp_via_twilio(phone_number)
+
             if self.app is None:
                 # Mock OTP for development
                 return await self._mock_send_otp(phone_number)
             
-            # In production, you would integrate with Firebase Auth REST API
-            # or use a third-party SMS service
+            # Fallback to Firebase REST placeholder
             return await self._send_otp_via_api(phone_number)
             
         except Exception as e:
@@ -72,6 +76,10 @@ class FirebaseAuthManager:
     async def verify_otp(self, phone_number: str, otp: str) -> Dict[str, Any]:
         """Verify OTP for phone number"""
         try:
+            # If Twilio path was used, verify against in-memory store
+            if settings.TWILIO_ACCOUNT_SID and settings.TWILIO_AUTH_TOKEN and settings.TWILIO_FROM_NUMBER:
+                return await self._verify_otp_local_store(phone_number, otp)
+
             if self.app is None:
                 # Mock verification for development
                 return await self._mock_verify_otp(phone_number, otp)
@@ -219,6 +227,42 @@ class FirebaseAuthManager:
         except Exception as e:
             logger.error(f"API OTP send failed: {e}")
             return await self._mock_send_otp(phone_number)
+
+    async def _send_otp_via_twilio(self, phone_number: str) -> Dict[str, Any]:
+        """Send OTP using Twilio SMS if configured."""
+        try:
+            # Generate and store OTP
+            otp_code = "123456" if settings.LOG_LEVEL == "DEBUG" else str(100000 + hash(phone_number) % 900000)[0:6]
+            if not hasattr(self, '_otp_store'):
+                self._otp_store = {}
+            self._otp_store[phone_number] = otp_code
+
+            client = TwilioClient(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+            message = client.messages.create(
+                body=f"Your AgroWatch verification code is {otp_code}",
+                from_=settings.TWILIO_FROM_NUMBER,
+                to=phone_number
+            )
+            logger.info(f"Twilio SMS sent: sid={message.sid}")
+            return {"success": True, "message": "OTP sent via SMS"}
+        except Exception as e:
+            logger.error(f"Twilio send failed: {e}")
+            return await self._mock_send_otp(phone_number)
+
+    async def _verify_otp_local_store(self, phone_number: str, otp: str) -> Dict[str, Any]:
+        """Verify OTP using in-memory store (Twilio path)."""
+        if not hasattr(self, '_otp_store'):
+            self._otp_store = {}
+        stored = self._otp_store.get(phone_number)
+        if stored and stored == otp:
+            del self._otp_store[phone_number]
+            return {
+                "success": True,
+                "uid": f"mock_uid_{phone_number.replace('+', '').replace(' ', '')}",
+                "custom_token": f"mock_token_{phone_number}",
+                "message": "OTP verified successfully"
+            }
+        return {"success": False, "error": "Invalid OTP"}
     
     async def _verify_otp_with_firebase(self, phone_number: str, otp: str) -> Dict[str, Any]:
         """Verify OTP with Firebase"""

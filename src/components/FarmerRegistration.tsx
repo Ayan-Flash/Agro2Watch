@@ -37,7 +37,7 @@ interface AadhaarData {
 }
 
 export const FarmerRegistration: React.FC = () => {
-  const { user } = useAuth();
+  const { user, updateProfile } = useAuth();
   const { language } = useLanguage();
   const t = useTranslation(language);
   
@@ -46,6 +46,7 @@ export const FarmerRegistration: React.FC = () => {
     phone: user?.phone || '',
     aadhaarNumber: user?.aadhar || '',
     address: '',
+    location: user?.location || '',
     farmSize: String(user?.farmSize || ''),
     farmUnit: 'acres',
     cropTypes: user?.cropType ? [user.cropType] : []
@@ -163,9 +164,18 @@ export const FarmerRegistration: React.FC = () => {
     setError('');
 
     try {
-      // Simulate form submission
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      // Persist to profile
+      const normalizedCrop: 'corn' | 'vegetables' | 'both' | undefined =
+        formData.cropTypes.length > 1 ? 'both' : (formData.cropTypes[0] as any);
+
+      await updateProfile({
+        name: formData.name,
+        aadhar: formData.aadhaarNumber,
+        location: formData.location,
+        farmSize: formData.farmSize ? parseFloat(formData.farmSize) : undefined,
+        cropType: normalizedCrop,
+      });
+
       setSuccess('Registration updated successfully!');
     } catch (err) {
       setError('Registration failed. Please try again.');
@@ -327,6 +337,18 @@ export const FarmerRegistration: React.FC = () => {
                     value={formData.address}
                     onChange={(e) => handleInputChange('address', e.target.value)}
                     placeholder="Complete address with village, district, state"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="location">Location (City) *</Label>
+                  <Input
+                    id="location"
+                    type="text"
+                    value={formData.location}
+                    onChange={(e) => handleInputChange('location', e.target.value)}
+                    placeholder="e.g., New Delhi,IN or Kochi,IN"
+                    required
                   />
                 </div>
               </div>

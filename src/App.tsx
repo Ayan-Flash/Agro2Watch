@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { AuthProvider } from './components/AuthContext';
 import { LanguageProvider } from './components/LanguageContext';
 import { useAuth } from './components/AuthContext';
-import Login from './components/login';
-import Navigation from './components/Navigation';
+import { Login } from './components/login';
+import Navbar from './components/Navbar';
 import Dashboard from './components/Dashboard';
 import CropDetection from './components/CropDetection';
 import PestDetection from './components/PestDetection';
@@ -13,11 +13,14 @@ import LandingPage from './components/LandingPage';
 import Profile from './components/Profile';
 import {AdminDashboard} from './components/AdminDashboard';
 import GovernmentSchemes from './components/GovermentSchemes';
+import Footer from './components/Footer';
+import AIChatbot from './components/chatbot/AIChatbot';
 
 const AppContent: React.FC = () => {
   const { user, isLoading } = useAuth();
   const [currentView, setCurrentView] = useState('dashboard');
   const [showLanding, setShowLanding] = useState(true);
+  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -47,10 +50,18 @@ const AppContent: React.FC = () => {
     return <AdminDashboard />;
   }
 
+  const handleNavigationChange = (view: string) => {
+    if (view === 'chatbot') {
+      setIsChatbotOpen(true);
+    } else {
+      setCurrentView(view);
+      setIsChatbotOpen(false);
+    }
+  };
   const renderCurrentView = () => {
     switch (currentView) {
       case 'dashboard':
-        return <Dashboard />;
+        return <Dashboard onViewChange={handleNavigationChange} />;
       case 'crop-detection':
         return <CropDetection />;
       case 'pest-detection':
@@ -60,20 +71,27 @@ const AppContent: React.FC = () => {
       case 'farmer-registration':
         return <FarmerRegistration />;
       case 'government-schemes':
-        return <GovernmentSchemes />;
+        return <GovernmentSchemes onViewChange={handleNavigationChange} />;
       case 'profile':
         return <Profile onLogout={() => setCurrentView('dashboard')} />;
       default:
-        return <Dashboard />;
+        return <Dashboard onViewChange={handleNavigationChange} />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navigation currentView={currentView} onViewChange={setCurrentView} />
-      <main>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Navbar currentSection={currentView} onNavigate={handleNavigationChange} onLogout={() => setCurrentView('dashboard')} />
+      <main className="flex-1">
         {renderCurrentView()}
       </main>
+      <Footer onNavigate={handleNavigationChange} />
+      
+      {/* AI Chatbot */}
+      <AIChatbot 
+        isOpen={isChatbotOpen} 
+        onToggle={() => setIsChatbotOpen(!isChatbotOpen)}
+      />
     </div>
   );
 };

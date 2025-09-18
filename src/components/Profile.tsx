@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Badge } from './ui/badge';
@@ -22,7 +23,9 @@ import {
   Bell,
   CreditCard,
   FileText,
-  Activity
+  Activity,
+  Globe,
+  HelpCircle
 } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import { useLanguage } from './LanguageContext';
@@ -33,16 +36,21 @@ interface ProfileProps {
 }
 
 const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
-  const { user, logout } = useAuth();
+  const { user, logout, updateProfile } = useAuth();
   const { language } = useLanguage();
   const t = useTranslation(language);
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
     name: user?.name || '',
     aadhar: user?.aadhar || '',
+    location: user?.location || '',
     farmSize: user?.farmSize || 0,
     cropType: user?.cropType || 'both'
   });
+  const [isAadhaarOpen, setIsAadhaarOpen] = useState(false);
+  const [aadhaarNumber, setAadhaarNumber] = useState('');
+  const [qrData, setQrData] = useState('');
+  const [linking, setLinking] = useState(false);
 
   if (!user) {
     return (
@@ -56,8 +64,14 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
     );
   }
 
-  const handleSave = () => {
-    // Update user data logic here
+  const handleSave = async () => {
+    await updateProfile({
+      name: editData.name,
+      aadhar: editData.aadhar,
+      location: editData.location,
+      farmSize: editData.farmSize,
+      cropType: editData.cropType as any
+    });
     setIsEditing(false);
   };
 
@@ -65,10 +79,30 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
     setEditData({
       name: user?.name || '',
       aadhar: user?.aadhar || '',
+      location: user?.location || '',
       farmSize: user?.farmSize || 0,
       cropType: user?.cropType || 'both'
     });
     setIsEditing(false);
+  };
+
+  const handleLinkAadhaar = async () => {
+    setLinking(true);
+    try {
+      const { fetchAadhaarByNumber, fetchAadhaarByQr } = await import('../lib/backendApi');
+      const profile = qrData
+        ? await fetchAadhaarByQr(qrData)
+        : await fetchAadhaarByNumber(aadhaarNumber);
+      await updateProfile({ aadhar: profile.aadhar, name: profile.name });
+      setEditData((prev) => ({ ...prev, aadhar: profile.aadhar, name: profile.name || prev.name }));
+      setIsAadhaarOpen(false);
+      setAadhaarNumber('');
+      setQrData('');
+    } catch (e) {
+      console.error('Aadhaar link failed', e);
+    } finally {
+      setLinking(false);
+    }
   };
 
   return (
@@ -96,14 +130,26 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
                       Manage your account information and preferences
                     </CardDescription>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsEditing(!isEditing)}
-                  >
-                    {isEditing ? <X className="h-4 w-4 mr-2" /> : <Edit className="h-4 w-4 mr-2" />}
-                    {isEditing ? 'Cancel' : 'Edit'}
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    {isEditing && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleSave}
+                      >
+                        <Save className="h-4 w-4 mr-2" />
+                        Save
+                      </Button>
+                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsEditing(!isEditing)}
+                    >
+                      {isEditing ? <X className="h-4 w-4 mr-2" /> : <Edit className="h-4 w-4 mr-2" />}
+                      {isEditing ? 'Cancel' : 'Edit'}
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -125,6 +171,19 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
                       <Label className="text-sm font-medium text-gray-500">Phone Number</Label>
                       <p className="text-lg font-semibold">{user.phone}</p>
                     </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Location (City)</Label>
+                    {isEditing ? (
+                      <Input
+                        value={editData.location}
+                        onChange={(e) => setEditData({...editData, location: e.target.value})}
+                        className="mt-1"
+                        placeholder="e.g., Kochi,IN"
+                      />
+                    ) : (
+                      <p className="text-lg font-semibold">{user.location || 'Not provided'}</p>
+                    )}
+                  </div>
                     <div>
                       <Label className="text-sm font-medium text-gray-500">Aadhar Number</Label>
                       {isEditing ? (
@@ -307,9 +366,31 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
                       <h4 className="font-medium">Privacy</h4>
                       <p className="text-sm text-muted-foreground">Manage your data and privacy settings</p>
                     </div>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => setIsAadhaarOpen(true)}>
                       <Shield className="h-4 w-4 mr-2" />
                       Manage
+                    </Button>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium">Language</h4>
+                      <p className="text-sm text-muted-foreground">Change your preferred language</p>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      <Globe className="h-4 w-4 mr-2" />
+                      {language.toUpperCase()}
+                    </Button>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium">Help & Support</h4>
+                      <p className="text-sm text-muted-foreground">Get help and contact support</p>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      <HelpCircle className="h-4 w-4 mr-2" />
+                      Help
                     </Button>
                   </div>
                 </div>
@@ -331,6 +412,29 @@ const Profile: React.FC<ProfileProps> = ({ onLogout }) => {
             </Card>
           </TabsContent>
         </Tabs>
+        <Dialog open={isAadhaarOpen} onOpenChange={setIsAadhaarOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2"><Shield className="h-5 w-5" /> Link Aadhaar</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label className="text-sm">Aadhaar Number</Label>
+                <Input value={aadhaarNumber} onChange={(e) => setAadhaarNumber(e.target.value)} placeholder="XXXX-XXXX-XXXX" />
+              </div>
+              <div>
+                <Label className="text-sm">QR Data (optional)</Label>
+                <Input value={qrData} onChange={(e) => setQrData(e.target.value)} placeholder="Paste QR string" />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsAadhaarOpen(false)}>Cancel</Button>
+              <Button onClick={handleLinkAadhaar} disabled={linking || (!aadhaarNumber && !qrData)}>
+                {linking ? 'Linking...' : 'Link Aadhaar'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

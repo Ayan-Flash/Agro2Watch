@@ -5,6 +5,7 @@ interface User {
   phone: string;
   aadhar?: string;
   name?: string;
+  location?: string;
   farmSize?: number;
   cropType?: 'corn' | 'vegetables' | 'both';
   isProfileComplete: boolean;
@@ -24,6 +25,13 @@ interface AuthContextType {
   verifyOTP: (phone: string, otp: string) => Promise<boolean>;
   sendAadharOTP: (aadhar: string) => Promise<boolean>;
   completeProfile: (farmSize: number, cropType: 'corn' | 'vegetables' | 'both') => Promise<void>;
+  updateProfile: (updates: {
+    name?: string;
+    aadhar?: string;
+    location?: string;
+    farmSize?: number;
+    cropType?: 'corn' | 'vegetables' | 'both';
+  }) => Promise<void>;
   logout: () => void;
 }
 
@@ -209,7 +217,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         otp,
         timestamp: Date.now(),
         expires: Date.now() + 5 * 60 * 1000 // 5 minutes
-      }));
+      }
+      )
+      )
+      // Use a simple object to store OTPs
+      if (typeof window !== 'undefined') {
+        const otpStore = JSON.parse(localStorage.getItem('temp_otp_store') || '{}');
+        otpStore[phone] = {
+          otp,
+          timestamp: Date.now(),
+          expires: Date.now() + 5 * 60 * 1000 // 5 minutes
+        };
+        localStorage.setItem('temp_otp_store', JSON.stringify(otpStore));
+      }
       
       console.log(`OTP for ${phone}: ${otp}`); // For testing
       return true;
@@ -221,13 +241,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const verifyOTP = async (phone: string, otp: string): Promise<boolean> => {
     try {
-      const storedOTP = localStorage.getItem(`otp_${phone}`);
-      if (!storedOTP) return false;
+      const otpStore = JSON.parse(localStorage.getItem('temp_otp_store') || '{}');
+      const storedData = otpStore[phone];
       
-      const { otp: correctOTP, expires } = JSON.parse(storedOTP);
+      if (!storedData) return false;
+      
+      const { otp: correctOTP, expires } = storedData;
       
       if (Date.now() > expires) {
-        localStorage.removeItem(`otp_${phone}`);
+        delete otpStore[phone];
+        localStorage.setItem('temp_otp_store', JSON.stringify(otpStore));
         return false; // OTP expired
       }
       
@@ -242,7 +265,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setUser(users[userIndex]);
         }
         
-        localStorage.removeItem(`otp_${phone}`);
+        delete otpStore[phone];
+        localStorage.setItem('temp_otp_store', JSON.stringify(otpStore));
         return true;
       }
       
@@ -294,6 +318,39 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const updateProfile = async (updates: {
+    name?: string;
+    aadhar?: string;
+    location?: string;
+    farmSize?: number;
+    cropType?: 'corn' | 'vegetables' | 'both';
+  }): Promise<void> => {
+    if (!user) return;
+    try {
+      const updatedUser: User = {
+        ...user,
+        ...(updates.name !== undefined ? { name: updates.name } : {}),
+        ...(updates.aadhar !== undefined ? { aadhar: updates.aadhar } : {}),
+        ...(updates.location !== undefined ? { location: updates.location } : {}),
+        ...(updates.farmSize !== undefined ? { farmSize: updates.farmSize } : {}),
+        ...(updates.cropType !== undefined ? { cropType: updates.cropType } : {}),
+        isProfileComplete: updates.farmSize !== undefined || updates.cropType !== undefined ? true : user.isProfileComplete
+      };
+
+      const users = JSON.parse(localStorage.getItem('agrowatch_users') || '[]');
+      const userIndex = users.findIndex((u: any) => u.id === user.id);
+      if (userIndex !== -1) {
+        users[userIndex] = { ...users[userIndex], ...updates, isProfileComplete: updatedUser.isProfileComplete };
+        localStorage.setItem('agrowatch_users', JSON.stringify(users));
+      }
+
+      setUser(updatedUser);
+    } catch (error) {
+      console.error('Update profile error:', error);
+      throw error;
+    }
+  };
+
   const logout = () => {
     setUser(null);
     localStorage.removeItem('agrowatch_user');
@@ -310,6 +367,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     verifyOTP,
     sendAadharOTP,
     completeProfile,
+    updateProfile,
     logout
   };
 

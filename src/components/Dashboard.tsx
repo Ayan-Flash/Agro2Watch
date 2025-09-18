@@ -16,6 +16,11 @@ import {
 import { useLanguage } from './LanguageContext';
 import { useAuth } from './AuthContext';
 import { useTranslation } from '@/lib/translations';
+import { getCurrentLocationWeather, fetchWeatherByCity } from '@/lib/weatherApi';
+
+interface DashboardProps {
+  onViewChange?: (view: string) => void;
+}
 
 interface WeatherData {
   temperature: number;
@@ -32,7 +37,7 @@ interface CropData {
   totalArea: number;
 }
 
-export const Dashboard: React.FC = () => {
+export const Dashboard: React.FC<DashboardProps> = ({ onViewChange }) => {
   const { language } = useLanguage();
   const { user } = useAuth();
   const t = useTranslation(language);
@@ -40,27 +45,23 @@ export const Dashboard: React.FC = () => {
   const [cropData, setCropData] = useState<CropData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch real weather data
+  // Fetch real weather data using user's current location (geolocation)
   useEffect(() => {
     const fetchWeatherData = async () => {
       try {
-        // Replace with your actual weather API key and endpoint
-        const API_KEY = 'your_openweather_api_key';
-        const city = 'Kochi,IN'; // Default to Kerala
-        
-        // For demo purposes, using mock data
-        // const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric`);
-        
-        // Mock weather data for demo
-        const mockWeatherData: WeatherData = {
-          temperature: 28,
-          humidity: 75,
-          windSpeed: 12,
-          description: 'Partly Cloudy',
-          location: 'Kochi, Kerala'
-        };
-        
-        setWeatherData(mockWeatherData);
+        let data;
+        if (user?.location) {
+          data = await fetchWeatherByCity(user.location);
+        } else {
+          data = await getCurrentLocationWeather();
+        }
+        setWeatherData({
+          temperature: data.temperature,
+          humidity: data.humidity,
+          windSpeed: data.windSpeed,
+          description: data.description,
+          location: data.location
+        });
       } catch (error) {
         console.error('Error fetching weather data:', error);
         // Fallback data
@@ -69,7 +70,7 @@ export const Dashboard: React.FC = () => {
           humidity: 70,
           windSpeed: 10,
           description: 'Data unavailable',
-          location: 'Kerala'
+          location: 'India'
         });
       }
     };
@@ -113,78 +114,79 @@ export const Dashboard: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Welcome Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          {t.welcomeMessage}
-        </h1>
-        <p className="text-gray-600">
-          Welcome back, {user?.name || user?.phone}! Here's your farm overview for today.
-        </p>
-      </div>
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-4 py-8">
+        {/* Welcome Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            {t.welcomeMessage}
+          </h1>
+          <p className="text-gray-600">
+            Welcome back, {user?.name || user?.phone}! Here's your farm overview for today.
+          </p>
+        </div>
 
-      {/* Weather Cards */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t.temperature}</CardTitle>
-            <Thermometer className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {weatherData?.temperature || '--'}°C
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {weatherData?.description || 'Loading...'}
-            </p>
-          </CardContent>
-        </Card>
+        {/* Weather Cards */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+          <Card className="hover:shadow-md transition-shadow duration-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">{t.temperature}</CardTitle>
+              <Thermometer className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {weatherData?.temperature || '--'}°C
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {weatherData?.description || 'Loading...'}
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t.humidity}</CardTitle>
-            <Droplets className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {weatherData?.humidity || '--'}%
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Relative humidity
-            </p>
-          </CardContent>
-        </Card>
+          <Card className="hover:shadow-md transition-shadow duration-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">{t.humidity}</CardTitle>
+              <Droplets className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {weatherData?.humidity || '--'}%
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Relative humidity
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Wind Speed</CardTitle>
-            <Wind className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {weatherData?.windSpeed || '--'} km/h
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Current wind speed
-            </p>
-          </CardContent>
-        </Card>
+          <Card className="hover:shadow-md transition-shadow duration-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Wind Speed</CardTitle>
+              <Wind className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {weatherData?.windSpeed || '--'} km/h
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Current wind speed
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Location</CardTitle>
-            <MapPin className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-lg font-bold">
-              {weatherData?.location || 'Kerala'}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Current location
-            </p>
-          </CardContent>
-        </Card>
+          <Card className="hover:shadow-md transition-shadow duration-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Location</CardTitle>
+              <MapPin className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-lg font-bold">
+                {weatherData?.location || 'Kerala'}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Current location
+              </p>
+            </CardContent>
+          </Card>
       </div>
 
       {/* Crop Health Overview */}
@@ -211,7 +213,7 @@ export const Dashboard: React.FC = () => {
                   <p>No crop monitoring data available yet.</p>
                   <Button 
                     className="mt-4" 
-                    onClick={() => window.location.hash = '#crop-detection'}
+                    onClick={() => onViewChange?.('farmer-registration')}
                   >
                     Start Crop Analysis
                   </Button>
@@ -266,7 +268,7 @@ export const Dashboard: React.FC = () => {
           <div className="grid gap-4 md:grid-cols-3">
             <Button 
               className="h-20 flex-col gap-2"
-              onClick={() => window.location.hash = '#crop-detection'}
+              onClick={() => onViewChange?.('crop-detection')}
             >
               <Leaf className="h-6 w-6" />
               Analyze Crops
@@ -275,7 +277,7 @@ export const Dashboard: React.FC = () => {
             <Button 
               variant="outline" 
               className="h-20 flex-col gap-2"
-              onClick={() => window.location.hash = '#soil-detection'}
+              onClick={() => onViewChange?.('soil-detection')}
             >
               <Activity className="h-6 w-6" />
               Test Soil
@@ -284,7 +286,7 @@ export const Dashboard: React.FC = () => {
             <Button 
               variant="outline" 
               className="h-20 flex-col gap-2"
-              onClick={() => window.location.hash = '#farmer-registration'}
+              onClick={() => onViewChange?.('farmer-registration')}
             >
               <TrendingUp className="h-6 w-6" />
               Update Profile
@@ -292,6 +294,7 @@ export const Dashboard: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 };

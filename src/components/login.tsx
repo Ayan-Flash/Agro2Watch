@@ -4,7 +4,8 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Leaf, Phone, Globe, CreditCard, Shield, Loader2 } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Leaf, Phone, Globe, CreditCard, Shield, Loader2, AlertTriangle } from 'lucide-react';
 import { useAuth } from './AuthContext';
 import { useLanguage } from './LanguageContext';
 import { useTranslation, languageOptions } from '@/lib/translations';
@@ -17,25 +18,36 @@ import {
 
 export const Login: React.FC = () => {
   const [loginMethod, setLoginMethod] = useState<'phone' | 'aadhaar'>('phone');
+  const [isSignup, setIsSignup] = useState(false);
   const [phone, setPhone] = useState('');
   const [aadhaar, setAadhaar] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [name, setName] = useState('');
   const [otp, setOtp] = useState('');
   const [showOtp, setShowOtp] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
-  const { login } = useAuth();
+  const { login, signup, sendOTP, verifyOTP } = useAuth();
   const { language, setLanguage } = useLanguage();
   const t = useTranslation(language);
 
-  const handleSignIn = async (e: React.FormEvent) => {
+  const handlePhoneAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const identifier = loginMethod === 'phone' ? phone : aadhaar;
-    
-    if (!identifier || !password) {
-      setError('Please fill in all fields');
+    if (!phone || (!isSignup && !password) || (isSignup && (!name || !password))) {
+      setError('Please fill in all required fields');
+      return;
+    }
+
+    if (isSignup && password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+
+    if (isSignup && password !== confirmPassword) {
+      setError('Passwords do not match');
       return;
     }
 
@@ -43,18 +55,29 @@ export const Login: React.FC = () => {
     setError('');
     
     try {
-      // Simulate sending OTP
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setShowOtp(true);
-      console.log('OTP sent to:', identifier);
+      if (isSignup) {
+        // Send OTP for signup
+        const otpSent = await sendOTP(phone);
+        if (otpSent) {
+          setShowOtp(true);
+        } else {
+          setError('Failed to send OTP. Please try again.');
+        }
+      } else {
+        // Direct login for existing users
+        const success = await login(phone, password);
+        if (!success) {
+          setError('Invalid phone number or password');
+        }
+      }
     } catch (err) {
-      setError('Failed to send OTP. Please try again.');
+      setError('Authentication failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleVerifyOtp = async () => {
+  const handleOtpVerification = async () => {
     if (!otp || otp.length !== 6) {
       setError('Please enter valid 6-digit OTP');
       return;
@@ -64,13 +87,22 @@ export const Login: React.FC = () => {
     setError('');
     
     try {
-      // Simulate OTP verification and login
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const identifier = loginMethod === 'phone' ? phone : aadhaar;
-      await login(identifier, 'verified');
+      const verified = await verifyOTP(phone, otp);
+      if (verified) {
+        if (isSignup) {
+          // Complete signup with provided password, then login
+          const created = await signup(phone, password, name);
+          if (created) {
+            await login(phone, password);
+          } else {
+            setError('Account already exists with this phone number');
+          }
+        }
+      } else {
+        setError('Invalid OTP. Please try again.');
+      }
     } catch (err) {
-      setError('Invalid OTP. Please try again.');
+      setError('OTP verification failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -79,9 +111,9 @@ export const Login: React.FC = () => {
   const LanguageToggle = () => (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2 animate-in slide-in-from-top duration-300">
+        <Button variant="ghost" size="sm" className="gap-2">
           <Globe className="h-4 w-4" />
-          {languageOptions.find(lang => lang.code === language)?.nativeName || 'English'}
+          {languageOptions.find(lang => lang.code === language)?.name || 'English'}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
@@ -101,27 +133,33 @@ export const Login: React.FC = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 via-blue-50 to-indigo-50 p-4">
+      {/* Language Toggle - Top Right */}
       <div className="absolute top-4 right-4">
         <LanguageToggle />
       </div>
       
-      <Card className="w-full max-w-md animate-in slide-in-from-bottom duration-500">
-        <CardHeader className="text-center">
-          <div className="flex items-center justify-center space-x-2 mb-4 animate-in zoom-in duration-300 delay-200">
+      <Card className="w-full max-w-md shadow-lg">
+        <CardHeader className="text-center space-y-4">
+          <div className="flex items-center justify-center space-x-2">
             <Leaf className="h-8 w-8 text-green-600" />
             <span className="text-2xl font-bold text-green-600">AgroWatch</span>
-            <Badge variant="secondary" className="text-xs">India</Badge>
+            <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+              India
+            </Badge>
           </div>
-          <CardTitle className="text-2xl animate-in slide-in-from-left duration-300 delay-300">
-            {t.login}
-          </CardTitle>
-          <CardDescription className="animate-in slide-in-from-right duration-300 delay-400">
-            {t.subtitle}
-          </CardDescription>
+          <div>
+            <CardTitle className="text-2xl text-gray-900">
+              {isSignup ? 'Sign Up' : 'Login'}
+            </CardTitle>
+            <CardDescription className="text-gray-600">
+              AI-Powered Precision Farming for India
+            </CardDescription>
+          </div>
         </CardHeader>
-        <CardContent className="animate-in fade-in duration-300 delay-500">
+        
+        <CardContent className="space-y-6">
           {!showOtp ? (
-            <form onSubmit={handleSignIn} className="space-y-4">
+            <>
               {/* Login Method Selection */}
               <div className="flex gap-2 mb-4">
                 <Button
@@ -144,88 +182,157 @@ export const Login: React.FC = () => {
                 </Button>
               </div>
 
-              {loginMethod === 'phone' ? (
-                <div className="space-y-2">
-                  <Label htmlFor="phone">{t.phone}</Label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <form onSubmit={handlePhoneAuth} className="space-y-4">
+                {/* Name field for signup */}
+                {isSignup && (
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Full Name</Label>
                     <Input
-                      id="phone"
-                      type="tel"
-                      placeholder="+91 9876543210"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      className="pl-10"
-                      required
-                    />
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <Label htmlFor="aadhaar">{t.aadhaarNumber}</Label>
-                  <div className="relative">
-                    <CreditCard className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="aadhaar"
+                      id="name"
                       type="text"
-                      placeholder="1234 5678 9012"
-                      value={aadhaar}
-                      onChange={(e) => setAadhaar(e.target.value)}
-                      className="pl-10"
-                      maxLength={12}
+                      placeholder="Enter your full name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
                       required
                     />
                   </div>
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Shield className="h-3 w-3" />
-                    Secure & encrypted
-                  </div>
-                </div>
-              )}
-              
-              <div className="space-y-2">
-                <Label htmlFor="password">{t.password}</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-              
-              {error && (
-                <div className="text-red-600 text-sm text-center animate-in slide-in-from-top duration-200">
-                  {error}
-                </div>
-              )}
+                )}
 
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={loading}
-              >
-                {loading ? (
+                {loginMethod === 'phone' ? (
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone Number</Label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="phone"
+                        type="tel"
+                        placeholder="+91 9876543210"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        className="pl-10"
+                        required
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Label htmlFor="aadhaar">Aadhaar Number</Label>
+                    <div className="relative">
+                      <CreditCard className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="aadhaar"
+                        type="text"
+                        placeholder="1234 5678 9012"
+                        value={aadhaar}
+                        onChange={(e) => setAadhaar(e.target.value)}
+                        className="pl-10"
+                        maxLength={12}
+                        required
+                      />
+                    </div>
+                  </div>
+                )}
+                
+                {/* Password fields */}
+                {isSignup ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    {t.loading}
+                    <div className="space-y-2">
+                      <Label htmlFor="password">Create Password</Label>
+                      <Input
+                        id="password"
+                        type="password"
+                        placeholder="Create a password (min 6 chars)"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="confirmPassword">Confirm Password</Label>
+                      <Input
+                        id="confirmPassword"
+                        type="password"
+                        placeholder="Re-enter your password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        required
+                      />
+                    </div>
                   </>
                 ) : (
-                  t.signIn
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="Enter your password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                  </div>
                 )}
-              </Button>
-            </form>
+                
+                {error && (
+                  <Alert className="border-red-200 bg-red-50">
+                    <AlertTriangle className="h-4 w-4 text-red-600" />
+                    <AlertDescription className="text-red-800">
+                      {error}
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                <Button
+                  type="submit"
+                  className="w-full bg-green-600 hover:bg-green-700"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      {isSignup ? 'Sending OTP...' : 'Signing In...'}
+                    </>
+                  ) : (
+                    isSignup ? 'Send OTP' : 'Sign In'
+                  )}
+                </Button>
+              </form>
+
+              {/* Toggle between login and signup */}
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSignup(!isSignup);
+                    setError('');
+                    setPhone('');
+                    setPassword('');
+                    setName('');
+                    setConfirmPassword('');
+                  }}
+                  className="text-sm text-green-600 hover:text-green-700 font-medium"
+                >
+                  {isSignup 
+                    ? 'Already have an account? Sign in' 
+                    : "Don't have an account? Sign up with phone number"
+                  }
+                </button>
+              </div>
+            </>
           ) : (
+            /* OTP Verification */
             <div className="space-y-4">
               <div className="text-center">
                 <Badge variant="secondary" className="mb-4">
-                  OTP sent to {loginMethod === 'phone' ? phone : `****${aadhaar.slice(-4)}`}
+                  OTP sent to {phone}
                 </Badge>
+                <p className="text-sm text-gray-600">
+                  Enter the 6-digit code sent to your phone
+                </p>
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="otp">{t.enterOtp}</Label>
+                <Label htmlFor="otp">Enter OTP</Label>
                 <Input
                   id="otp"
                   type="text"
@@ -239,35 +346,51 @@ export const Login: React.FC = () => {
               </div>
               
               {error && (
-                <div className="text-red-600 text-sm text-center animate-in slide-in-from-top duration-200">
-                  {error}
-                </div>
+                <Alert className="border-red-200 bg-red-50">
+                  <AlertTriangle className="h-4 w-4 text-red-600" />
+                  <AlertDescription className="text-red-800">
+                    {error}
+                  </AlertDescription>
+                </Alert>
               )}
 
               <Button
-                onClick={handleVerifyOtp}
-                className="w-full"
+                onClick={handleOtpVerification}
+                className="w-full bg-green-600 hover:bg-green-700"
                 disabled={loading || otp.length !== 6}
               >
                 {loading ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    {t.loading}
+                    Verifying...
                   </>
                 ) : (
-                  t.verifyOtp
+                  'Verify OTP'
                 )}
               </Button>
               
-              <Button
-                variant="outline"
-                onClick={() => setShowOtp(false)}
-                className="w-full"
-              >
-                Back
-              </Button>
+              <div className="flex justify-between text-sm">
+                <button
+                  onClick={() => setShowOtp(false)}
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  Back
+                </button>
+                <button
+                  onClick={() => handlePhoneAuth({ preventDefault: () => {} } as React.FormEvent)}
+                  className="text-green-600 hover:text-green-700"
+                >
+                  Resend OTP
+                </button>
+              </div>
             </div>
           )}
+
+          {/* Security Notice */}
+          <div className="flex items-center gap-2 text-xs text-gray-500 bg-gray-50 p-3 rounded-lg">
+            <Shield className="h-3 w-3" />
+            <span>Your data is secure and encrypted</span>
+          </div>
         </CardContent>
       </Card>
     </div>

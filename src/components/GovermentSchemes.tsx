@@ -45,7 +45,11 @@ interface Scheme {
   featured: boolean;
 }
 
-const GovernmentSchemes: React.FC = () => {
+interface GovernmentSchemesProps {
+  onViewChange?: (view: string) => void;
+}
+
+const GovernmentSchemes: React.FC<GovernmentSchemesProps> = ({ onViewChange }) => {
   const { language } = useLanguage();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -96,112 +100,6 @@ const GovernmentSchemes: React.FC = () => {
       applicationProcess: 'Contact local agriculture extension officer or soil testing laboratory. Soil samples collected from farms and tested for 12 parameters including NPK, pH, organic carbon.',
       documents: ['Aadhaar Card', 'Land Records', 'Contact Details'],
       website: 'https://soilhealth.dac.gov.in',
-      helpline: '18001801551',
-      states: ['all'],
-      crops: ['all'],
-      featured: false
-    },
-    {
-      id: 'msp',
-      name: 'Minimum Support Price (MSP)',
-      description: 'Government announces MSP for major crops to ensure remunerative prices to the growers for their produce with a view to encourage higher investment and production.',
-      category: 'price-support',
-      eligibility: 'All farmers growing notified crops. Currently covers 23 crops including cereals, pulses, oilseeds, and commercial crops.',
-      benefits: 'Guaranteed minimum price for agricultural produce to ensure fair returns',
-      applicationProcess: 'Sell produce at designated procurement centers during procurement season. Register with local procurement agency and bring produce for quality assessment.',
-      documents: ['Aadhaar Card', 'Land Records', 'Produce Quality Certificate'],
-      website: 'https://fci.gov.in',
-      helpline: '1800118004',
-      states: ['punjab', 'haryana', 'madhya-pradesh', 'uttar-pradesh'],
-      crops: ['rice', 'wheat', 'cotton', 'pulses'],
-      featured: true
-    },
-    {
-      id: 'kisan-credit-card',
-      name: 'Kisan Credit Card (KCC)',
-      description: 'Provides adequate and timely credit support from the banking system to farmers for their cultivation and other needs including post-harvest expenses, produce marketing loan, consumption requirements of farmer household, maintenance of farm assets and activities allied to agriculture.',
-      category: 'credit',
-      eligibility: 'All farmers - individual/joint borrowers who are owner cultivators, tenant farmers, oral lessees & sharecroppers are eligible.',
-      benefits: 'Flexible credit facility with low interest rates and easy repayment terms',
-      applicationProcess: 'Apply through any bank branch with land documents, identity proof, and address proof. Credit limit based on scale of finance for crops and repayment capacity.',
-      documents: ['Aadhaar Card', 'PAN Card', 'Land Documents', 'Income Certificate'],
-      website: 'https://www.nabard.org',
-      helpline: '18001036999',
-      states: ['all'],
-      crops: ['all'],
-      featured: false
-    },
-    {
-      id: 'e-nam',
-      name: 'National Agriculture Market (e-NAM)',
-      description: 'Pan-India electronic trading portal which networks the existing APMC mandis to create a unified national market for agricultural commodities for better price discovery and transparency in auction process.',
-      category: 'marketing',
-      eligibility: 'All farmers, FPOs, and traders registered with participating mandis can trade on the platform.',
-      benefits: 'Better price discovery, transparent auction process, and direct market access',
-      applicationProcess: 'Register on e-NAM portal with mobile number and required documents. Upload quality parameters and samples for online bidding by registered traders.',
-      documents: ['Aadhaar Card', 'Mobile Number', 'Bank Account Details', 'Mandi Registration'],
-      website: 'https://enam.gov.in',
-      helpline: '1800270010',
-      states: ['all'],
-      crops: ['all'],
-      featured: false
-    },
-    {
-      id: 'organic-farming',
-      name: 'Paramparagat Krishi Vikas Yojana (PKVY)',
-      description: 'Promotes organic farming through cluster approach and PGS certification. Provides financial assistance for organic inputs, certification, and marketing support to reduce cost of organic farming.',
-      category: 'organic',
-      eligibility: 'Individual farmers, groups of farmers, and Farmer Producer Organizations (FPOs) engaged in organic farming.',
-      benefits: 'Financial assistance of ₹50,000 per hectare over 3 years for organic farming conversion',
-      applicationProcess: 'Apply through state agriculture department or implementing agencies. Form clusters of 50 farmers with 50 hectares for organic farming certification.',
-      documents: ['Aadhaar Card', 'Land Records', 'Group Formation Certificate', 'Bank Account Details'],
-      amount: '₹50,000/hectare',
-      website: 'https://pgsindia-ncof.gov.in',
-      helpline: '18001801551',
-      states: ['all'],
-      crops: ['vegetables', 'fruits', 'spices'],
-      featured: false
-    },
-    {
-      id: 'mechanization',
-      name: 'Sub-Mission on Agricultural Mechanization',
-      description: 'Promotes agricultural mechanization through subsidies on farm equipment, establishment of custom hiring centers, and capacity building programs to reduce drudgery and enhance productivity.',
-      category: 'equipment',
-      eligibility: 'Individual farmers, Self Help Groups, Farmer Producer Organizations, and cooperative societies are eligible for subsidies.',
-      benefits: 'Subsidies ranging from 40-80% on farm equipment based on category and equipment type',
-      applicationProcess: 'Apply online through state agriculture department portal. Subsidy ranges from 40-80% based on category and equipment type.',
-      documents: ['Aadhaar Card', 'Land Records', 'Income Certificate', 'Bank Account Details'],
-      website: 'https://agrimachinery.nic.in',
-      helpline: '18001801551',
-      states: ['all'],
-      crops: ['all'],
-      featured: false
-    },
-    {
-      id: 'irrigation',
-      name: 'Pradhan Mantri Krishi Sinchai Yojana',
-      description: 'Dedicated irrigation fund with the motto "Har Khet Ko Pani" for expanding cultivable area under assured irrigation, improving on-farm water use efficiency, and promoting precision irrigation.',
-      category: 'irrigation',
-      eligibility: 'All categories of farmers including small and marginal farmers, SHGs, cooperatives, FPOs, and other eligible institutions.',
-      benefits: 'Financial assistance for micro-irrigation, watershed development, and water conservation',
-      applicationProcess: 'Apply through state implementing agencies with project proposals. Focus on micro-irrigation, watershed development, and per drop more crop initiatives.',
-      documents: ['Aadhaar Card', 'Land Records', 'Project Proposal', 'Water Source Certificate'],
-      website: 'https://pmksy.gov.in',
-      helpline: '18001801551',
-      states: ['all'],
-      crops: ['all'],
-      featured: false
-    },
-    {
-      id: 'rkvy',
-      name: 'Rashtriya Krishi Vikas Yojana (RKVY)',
-      description: 'State Plan Scheme that provides states flexibility and autonomy in planning and executing programs for agricultural development based on agro-climatic conditions and natural resource availability.',
-      category: 'development',
-      eligibility: 'State governments, farmer groups, cooperatives, and private sector entities can implement projects under RKVY guidelines.',
-      benefits: 'Flexible funding for agricultural infrastructure development and technology adoption',
-      applicationProcess: 'State governments prepare and submit proposals to central government. Focus on infrastructure development, technology adoption, and value chain development.',
-      documents: ['Project Proposal', 'State Government Approval', 'Implementation Plan'],
-      website: 'https://rkvy.nic.in',
       helpline: '18001801551',
       states: ['all'],
       crops: ['all'],
@@ -508,6 +406,7 @@ const GovernmentSchemes: React.FC = () => {
                         variant="outline" 
                         size="sm" 
                         className="flex-1"
+                        onClick={() => alert('Find nearest center feature coming soon!')}
                       >
                         <MapPin className="h-4 w-4 mr-1" />
                         Find Center
@@ -554,6 +453,7 @@ const GovernmentSchemes: React.FC = () => {
                 size="lg" 
                 variant="outline" 
                 className="border-white text-white hover:bg-white hover:text-blue-600"
+                onClick={() => alert('Find nearest center feature coming soon!')}
               >
                 <MapPin className="h-5 w-5 mr-2" />
                 Find Nearest Center

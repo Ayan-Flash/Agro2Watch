@@ -85,7 +85,6 @@ export interface Translations {
   // Additional fields
   subtitle?: string;
   acres?: string;
-  hectares?: string;
   corn?: string;
   vegetables?: string;
   both?: string;
@@ -96,6 +95,37 @@ export interface Translations {
   farmDetails?: string;
   cropTypes?: string;
   signIn?: string;
+  
+  // Navigation specific
+  nav?: {
+    dashboard: string;
+    cropDetection: string;
+    pestDetection: string;
+    soilDetection: string;
+    governmentSchemes: string;
+    profile: string;
+    logout: string;
+    language: string;
+  };
+  
+  // Additional common fields
+  healthy?: string;
+  stressed?: string;
+  critical?: string;
+  fieldOverview?: string;
+  vegetationIndex?: string;
+  hectares?: string;
+  weeklyTrend?: string;
+  prediction?: string;
+  environmental?: string;
+  lastUpdated?: string;
+  percentage?: string;
+  celsius?: string;
+  high?: string;
+  medium?: string;
+  low?: string;
+  viewDetails?: string;
+  takeAction?: string;
 }
 
 export const translations: Record<string, Translations> = {
@@ -110,11 +140,41 @@ export const translations: Record<string, Translations> = {
     login: "Login",
     logout: "Logout",
     
+    // Navigation specific
+    nav: {
+      dashboard: "Dashboard",
+      cropDetection: "Crop Detection",
+      pestDetection: "Pest Detection",
+      soilDetection: "Soil Detection",
+      governmentSchemes: "Government Schemes",
+      profile: "Profile",
+      logout: "Logout",
+      language: "Language"
+    },
+    
     // Dashboard
     welcomeMessage: "Welcome to AgroWatch",
     cropHealthOverview: "Crop Health Overview",
     environmentalData: "Environmental Data",
     recentAlerts: "Recent Alerts",
+    
+    // Additional common fields
+    healthy: "Healthy",
+    stressed: "Stressed", 
+    critical: "Critical",
+    fieldOverview: "Field Overview",
+    vegetationIndex: "Vegetation Index",
+    weeklyTrend: "Weekly Trend",
+    prediction: "Prediction",
+    environmental: "Environmental",
+    lastUpdated: "Last Updated",
+    percentage: "%",
+    celsius: "°C",
+    high: "High",
+    medium: "Medium",
+    low: "Low",
+    viewDetails: "View Details",
+    takeAction: "Take Action",
     
     // Crop Detection
     cropHealthAnalysis: "Crop Health Analysis",
@@ -209,6 +269,18 @@ export const translations: Record<string, Translations> = {
     adminDashboard: "एडमिन डैशबोर्ड",
     login: "लॉग इन",
     logout: "लॉग आउट",
+    
+    // Navigation specific
+    nav: {
+      dashboard: "डैशबोर्ड",
+      cropDetection: "फसल का पता लगाना",
+      pestDetection: "कीट का पता लगाना",
+      soilDetection: "मिट्टी की जांच",
+      governmentSchemes: "सरकारी योजनाएं",
+      profile: "प्रोफाइल",
+      logout: "लॉग आउट",
+      language: "भाषा"
+    },
     
     // Dashboard
     welcomeMessage: "एग्रोवॉच में आपका स्वागत है",
@@ -817,17 +889,8 @@ export const useTranslation = (language: string): Translations => {
   return translations[language] || translations.en;
 };
 
-// Get translation function
-export const getTranslation = (language: string, key: string): string => {
-  const t = useTranslation(language);
-  const keys = key.split('.');
-  let value: any = t;
-  
-  for (const k of keys) {
-    value = value?.[k];
-  }
-  
-  return value || key;
+export const t = (key: TranslationKey, language: string = 'en'): string => {
+  const translation: Record<string, string> = (translations as any)[language] || translations.en;
+  const fallback: Record<string, string> = translations.en as any;
+  return translation[key] || fallback[key] || key;
 };
-
-export default translations;
