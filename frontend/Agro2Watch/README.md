@@ -1,0 +1,170 @@
+## AgroWatch
+
+Smart agriculture dashboard built with React, TypeScript, and Vite. It provides farmer and admin views, crop/soil detection panels, environmental insights, alerts, and trends visualization with a responsive navigation bar and multilingual support.
+
+### Features
+- Farmer and Admin dashboards
+- Crop detection and soil detection views
+- Environmental panel, alerts panel, and trends chart
+- Authentication demo (mobile + OTP) with mock user data
+- Multilingual UI via `translations.ts` and a language selector
+- Responsive navigation with mobile and desktop layouts
+- Toasts, tooltips, and modern UI components (shadcn/ui style)
+- React Query for data fetching and caching
+
+### Tech Stack
+- React 18, TypeScript, Vite
+- React Router, @tanstack/react-query
+- Tailwind CSS
+- lucide-react icons
+- shadcn/ui-like components (in `src/components/ui`)
+- Firebase (app/auth/functions initialized; functions emulator in dev)
+
+---
+
+### Getting Started
+
+#### Prerequisites
+- Node.js 18+ and pnpm (recommended) or npm
+
+#### Install
+```bash
+pnpm install
+# or
+npm install
+```
+
+#### Development
+```bash
+pnpm dev
+# or
+npm run dev
+```
+The app runs at `http://localhost:5173` by default.
+
+#### Build
+```bash
+pnpm build
+# or
+npm run build
+```
+Static output is generated in `AgroWatch/dist`.
+
+#### Preview production build
+```bash
+pnpm preview
+# or
+npm run preview
+```
+
+---
+
+### Project Structure
+```
+AgroWatch/
+  src/
+    components/
+      Navigation.tsx           # Responsive navbar with language selector
+      Dashboard.tsx, ...       # Feature components
+      ui/                      # Reusable UI primitives
+    pages/
+      Index.tsx               # App shell: providers + routed content
+      NotFound.tsx
+    lib/
+      auth.ts                 # Mock auth service and demo users
+      firebase.ts             # Firebase app/auth/functions setup
+      translations.ts         # Language strings and options
+    main.tsx, App.tsx         # App entry, routes
+  public/
+  vite.config.ts
+  tailwind.config.js
+```
+
+---
+
+### Configuration
+
+Firebase is initialized in `src/lib/firebase.ts`. For production, move secrets into environment variables and do not commit them to git. With Vite, env vars must be prefixed with `VITE_` and placed in `.env` files.
+
+Example `.env` (do not commit):
+```bash
+VITE_FIREBASE_API_KEY=...
+VITE_FIREBASE_AUTH_DOMAIN=...
+VITE_FIREBASE_PROJECT_ID=...
+VITE_FIREBASE_STORAGE_BUCKET=...
+VITE_FIREBASE_MESSAGING_SENDER_ID=...
+VITE_FIREBASE_APP_ID=...
+VITE_FIREBASE_MEASUREMENT_ID=...
+```
+Then, import from `import.meta.env` inside `firebase.ts`.
+
+The functions emulator is connected in development on `localhost:5001` (see `firebase.ts`).
+
+---
+
+### Authentication (Demo)
+
+Auth flows are mocked via `src/lib/auth.ts` and UI in `components/LoginForm.tsx`/`components/FarmerRegistration.tsx`.
+
+- Demo mobiles:
+  - Admin: `9999912345`
+  - Farmer: `9000012345`
+- OTP: `123456`
+
+On successful login:
+- Admin users land in the Admin Dashboard.
+- Farmer users see the Farmer Dashboard with the top navigation bar.
+
+The navigation bar is rendered on all views and adapts between mobile and desktop layouts.
+
+---
+
+### Scripts
+Check `package.json` for the full list. Common scripts:
+
+- `dev` – start the Vite dev server
+- `build` – build for production
+- `preview` – preview the production build locally
+
+If using pnpm:
+```bash
+pnpm dev
+pnpm build
+pnpm preview
+```
+
+---
+
+### Styling
+- Tailwind CSS configured in `tailwind.config.js` and `src/index.css`
+- UI components under `src/components/ui`
+
+---
+
+### Routing
+`src/App.tsx` defines the base router with `/` → `pages/Index.tsx` and a `NotFound` fallback.
+
+---
+
+### Deployment
+Any static hosting (Vercel, Netlify, Firebase Hosting, GitHub Pages) can serve the `dist/` output.
+
+General steps:
+1. Build: `pnpm build`
+2. Deploy the contents of `AgroWatch/dist`
+
+For Firebase Hosting, configure `firebase.json` to use `AgroWatch/dist` as the public directory.
+
+---
+
+### Conventions
+- TypeScript strictness with clear naming and early returns
+- React Query for async state
+- Avoid storing secrets in the repo
+
+---
+
+### License
+Proprietary – all rights reserved. Update this section if you intend to open-source.
+
+
