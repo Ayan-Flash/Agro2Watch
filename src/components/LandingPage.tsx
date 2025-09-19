@@ -122,50 +122,74 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
   const teamMembers = [
     {
       name: "Ayan Ghosh",
-      role: "ALL",
-      expertise: "Computer Vision & Machine Learning",
-      education: "NO EDUCATION",
-      image: "👨‍💼",
+      role: "Project Lead & Full-Stack Developer",
+      expertise: "AI/ML, Computer Vision, Web Development",
+      education: "B.Tech CSE, IIIT Hyderabad",
+      image: "👨‍💻",
       social: {
-        linkedin: "#",
-        twitter: "#",
-        github: "#"
+        linkedin: "https://linkedin.com/in/ayan-ghosh",
+        twitter: "https://twitter.com/ayan_ghosh",
+        github: "https://github.com/ayan-ghosh"
       }
     },
     {
-      name: "Priya Patel",
-      role: "Full-Stack Developer",
-      expertise: "React, Node.js, Firebase",
+      name: "Ankan Ghosh",
+      role: "Backend Developer",
+      expertise: "Node.js, Python, Database Design",
+      education: "B.Tech CSE, IIIT Hyderabad",
+      image: "👨‍🔧",
+      social: {
+        linkedin: "https://linkedin.com/in/ankan-ghosh",
+        twitter: "https://twitter.com/ankan_ghosh",
+        github: "https://github.com/ankan-ghosh"
+      }
+    },
+    {
+      name: "Mehali Basu",
+      role: "Frontend Developer",
+      expertise: "React, TypeScript, UI/UX Design",
       education: "B.Tech CSE, IIIT Hyderabad",
       image: "👩‍💻",
       social: {
-        linkedin: "#",
-        twitter: "#",
-        github: "#"
+        linkedin: "https://linkedin.com/in/mehali-basu",
+        twitter: "https://twitter.com/mehali_basu",
+        github: "https://github.com/mehali-basu"
       }
     },
     {
-      name: "Dr. Rajesh Kumar",
-      role: "Agricultural Expert",
-      expertise: "Crop Science & Pest Management",
-      education: "PhD in Agriculture, IARI New Delhi",
-      image: "👨‍🔬",
+      name: "Jagriti Kundu",
+      role: "AI/ML Engineer",
+      expertise: "Machine Learning, Data Science, MATLAB",
+      education: "B.Tech CSE, IIIT Hyderabad",
+      image: "👩‍🔬",
       social: {
-        linkedin: "#",
-        twitter: "#",
-        github: "#"
+        linkedin: "https://linkedin.com/in/jagriti-kundu",
+        twitter: "https://twitter.com/jagriti_kundu",
+        github: "https://github.com/jagriti-kundu"
       }
     },
     {
-      name: "Anita Singh",
-      role: "UX/UI Designer",
-      expertise: "Mobile-First Design & Accessibility",
-      education: "M.Des, NID Ahmedabad",
-      image: "👩‍🎨",
+      name: "Arkish Sarkar",
+      role: "Mobile Developer",
+      expertise: "React Native, Flutter, Mobile UI/UX",
+      education: "B.Tech CSE, IIIT Hyderabad",
+      image: "👨‍📱",
       social: {
-        linkedin: "#",
-        twitter: "#",
-        github: "#"
+        linkedin: "https://linkedin.com/in/arkish-sarkar",
+        twitter: "https://twitter.com/arkish_sarkar",
+        github: "https://github.com/arkish-sarkar"
+      }
+    },
+    {
+      name: "Keshav Kumar Tiwari",
+      role: "DevOps & Cloud Engineer",
+      expertise: "AWS, Docker, CI/CD, Infrastructure",
+      education: "B.Tech CSE, IIIT Hyderabad",
+      image: "👨‍⚙️",
+      social: {
+        linkedin: "https://linkedin.com/in/keshav-tiwari",
+        twitter: "https://twitter.com/keshav_tiwari",
+        github: "https://github.com/keshav-tiwari"
       }
     }
   ];
@@ -384,24 +408,36 @@ const LandingPage: React.FC<LandingPageProps> = ({ onGetStarted }) => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
             {teamMembers.map((member, index) => (
-              <Card key={index} className="text-center hover:shadow-lg transition-shadow duration-300">
-                <CardContent className="p-6">
-                  <div className="text-6xl mb-4">{member.image}</div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-1">{member.name}</h3>
-                  <p className="text-green-600 font-medium mb-2">{member.role}</p>
-                  <p className="text-sm text-gray-600 mb-2">{member.expertise}</p>
+              <Card key={index} className="text-center hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 bg-white border-0 shadow-lg group">
+                <CardContent className="p-4 lg:p-6">
+                  <div className="text-5xl lg:text-6xl mb-4 group-hover:scale-110 transition-transform duration-300">{member.image}</div>
+                  <h3 className="text-lg lg:text-xl font-semibold text-gray-900 mb-1">{member.name}</h3>
+                  <p className="text-green-600 font-medium mb-2 text-sm lg:text-base">{member.role}</p>
+                  <p className="text-xs lg:text-sm text-gray-600 mb-2 leading-relaxed">{member.expertise}</p>
                   <p className="text-xs text-gray-500 mb-4">{member.education}</p>
                   
                   <div className="flex justify-center space-x-3">
-                    <a href={member.social.linkedin} className="text-gray-400 hover:text-blue-600 transition-colors">
+                    <a 
+                      href={member.social.linkedin} 
+                      className="text-gray-400 hover:text-blue-600 transition-colors p-2 rounded-full hover:bg-blue-50"
+                      title="LinkedIn"
+                    >
                       <Linkedin className="h-4 w-4" />
                     </a>
-                    <a href={member.social.twitter} className="text-gray-400 hover:text-blue-400 transition-colors">
+                    <a 
+                      href={member.social.twitter} 
+                      className="text-gray-400 hover:text-blue-400 transition-colors p-2 rounded-full hover:bg-blue-50"
+                      title="Twitter"
+                    >
                       <Twitter className="h-4 w-4" />
                     </a>
-                    <a href={member.social.github} className="text-gray-400 hover:text-gray-600 transition-colors">
+                    <a 
+                      href={member.social.github} 
+                      className="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-full hover:bg-gray-50"
+                      title="GitHub"
+                    >
                       <Github className="h-4 w-4" />
                     </a>
                   </div>
