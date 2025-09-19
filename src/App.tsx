@@ -33,8 +33,24 @@ const AppContent: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 via-blue-50 to-emerald-50">
+        <div className="text-center">
+          <div className="relative">
+            <div className="animate-spin rounded-full h-32 w-32 border-4 border-green-200"></div>
+            <div className="animate-spin rounded-full h-32 w-32 border-4 border-green-600 border-t-transparent absolute top-0 left-0"></div>
+          </div>
+          <div className="mt-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">AgroWatch</h2>
+            <p className="text-gray-600">Loading your farming dashboard...</p>
+            <div className="mt-4 flex justify-center">
+              <div className="flex space-x-1">
+                <div className="w-2 h-2 bg-green-600 rounded-full animate-bounce"></div>
+                <div className="w-2 h-2 bg-green-600 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                <div className="w-2 h-2 bg-green-600 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -91,10 +107,12 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-emerald-50 flex flex-col">
       <Navbar currentSection={currentView} onNavigate={handleNavigationChange} onLogout={() => setCurrentView('dashboard')} />
-      <main className="flex-1">
-        {renderCurrentView()}
+      <main className="flex-1 transition-all duration-300 ease-in-out">
+        <div className="animate-fadeIn">
+          {renderCurrentView()}
+        </div>
       </main>
       <Footer onNavigate={handleNavigationChange} />
       

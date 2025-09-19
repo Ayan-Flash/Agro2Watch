@@ -23,7 +23,8 @@ import {
   Building2,
   Bot,
   BarChart3,
-  MapPin
+  MapPin,
+  Zap
 } from 'lucide-react';
 import { useLanguage } from './LanguageContext';
 import { useAuth } from './AuthContext';
@@ -64,64 +65,79 @@ const Navbar: React.FC<NavbarProps> = ({ currentSection, onNavigate, onLogout })
   };
 
   return (
-    <nav className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
+    <nav className="bg-white/95 backdrop-blur-md border-b border-gray-200/50 shadow-lg sticky top-0 z-50 transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo and Brand */}
           <div className="flex items-center space-x-3">
-            <div className="flex items-center space-x-2">
-              <Leaf className="h-8 w-8 text-green-600" />
-              <span className="text-xl font-bold text-gray-900">AgroWatch</span>
+            <div className="flex items-center space-x-3 group cursor-pointer">
+              <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+                <Leaf className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <span className="text-xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">AgroWatch</span>
+                <p className="text-xs text-gray-500 -mt-1">AI-Powered Agriculture</p>
+              </div>
             </div>
-            <Badge variant="secondary" className="hidden sm:inline-flex bg-green-100 text-green-800">
+            <Badge variant="secondary" className="hidden sm:inline-flex bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200 shadow-sm">
+              <Zap className="h-3 w-3 mr-1" />
               AI-Powered
             </Badge>
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-1">
+          <div className="hidden lg:flex items-center space-x-2">
             {navItems.map((item) => (
               <Button
                 key={item.id}
                 variant={currentSection === item.id ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => handleNavigation(item.id)}
-                className={`flex items-center justify-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                className={`flex items-center justify-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 transform hover:scale-105 ${
                   currentSection === item.id
-                    ? 'bg-green-600 text-white hover:bg-green-700 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700 shadow-lg hover:shadow-xl'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/80 hover:shadow-md'
                 }`}
               >
                 <item.icon className="h-4 w-4 flex-shrink-0" />
                 <span className="hidden xl:inline whitespace-nowrap">{item.label}</span>
+                {currentSection === item.id && (
+                  <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                )}
               </Button>
             ))}
           </div>
 
           {/* Right Side - Language, Notifications, Profile */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2">
             {/* Language Selector */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="flex items-center space-x-2">
-                  <Globe className="h-4 w-4" />
-                  <span className="hidden sm:inline text-sm">{getCurrentLanguage().flag}</span>
-                  <ChevronDown className="h-3 w-3" />
+                <Button variant="ghost" size="sm" className="flex items-center space-x-2 hover:bg-gray-100/80 transition-all duration-200 rounded-lg px-3 py-2">
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-100 to-cyan-100 rounded-lg flex items-center justify-center">
+                    <Globe className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <span className="hidden sm:inline text-sm font-medium">{getCurrentLanguage().flag}</span>
+                  <ChevronDown className="h-3 w-3 text-gray-500" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuContent align="end" className="w-52 shadow-xl border-0 bg-white/95 backdrop-blur-md">
                 {languageOptions.map((lang) => (
                   <DropdownMenuItem
                     key={lang.code}
                     onClick={() => setLanguage(lang.code)}
-                    className={`flex items-center space-x-2 ${
-                      language === lang.code ? 'bg-green-50 text-green-700' : ''
+                    className={`flex items-center space-x-3 px-4 py-3 rounded-lg mx-2 my-1 transition-all duration-200 ${
+                      language === lang.code 
+                        ? 'bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 border border-green-200' 
+                        : 'hover:bg-gray-50'
                     }`}
                   >
-                    <span>{lang.flag}</span>
-                    <span>{lang.name}</span>
+                    <span className="text-lg">{lang.flag}</span>
+                    <span className="font-medium">{lang.name}</span>
                     {language === lang.code && (
-                      <span className="ml-auto text-green-600">✓</span>
+                      <div className="ml-auto w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs">✓</span>
+                      </div>
                     )}
                   </DropdownMenuItem>
                 ))}
@@ -129,12 +145,14 @@ const Navbar: React.FC<NavbarProps> = ({ currentSection, onNavigate, onLogout })
             </DropdownMenu>
 
             {/* Notifications */}
-            <Button variant="ghost" size="sm" className="relative">
-              <Bell className="h-4 w-4" />
+            <Button variant="ghost" size="sm" className="relative hover:bg-gray-100/80 transition-all duration-200 rounded-lg px-3 py-2">
+              <div className="w-8 h-8 bg-gradient-to-r from-orange-100 to-red-100 rounded-lg flex items-center justify-center">
+                <Bell className="h-4 w-4 text-orange-600" />
+              </div>
               {notifications > 0 && (
                 <Badge 
                   variant="destructive" 
-                  className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+                  className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs animate-pulse"
                 >
                   {notifications}
                 </Badge>
@@ -144,25 +162,36 @@ const Navbar: React.FC<NavbarProps> = ({ currentSection, onNavigate, onLogout })
             {/* Profile Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="flex items-center space-x-2">
-                  <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
+                <Button variant="ghost" size="sm" className="flex items-center space-x-2 hover:bg-gray-100/80 transition-all duration-200 rounded-lg px-3 py-2">
+                  <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg flex items-center justify-center shadow-md">
                     <User className="h-4 w-4 text-white" />
                   </div>
-                  <ChevronDown className="h-3 w-3 hidden sm:inline" />
+                  <ChevronDown className="h-3 w-3 hidden sm:inline text-gray-500" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={() => handleNavigation('profile')}>
-                  <User className="h-4 w-4 mr-2" />
-                  Profile
+              <DropdownMenuContent align="end" className="w-56 shadow-xl border-0 bg-white/95 backdrop-blur-md">
+                <div className="px-4 py-3 border-b border-gray-100">
+                  <p className="text-sm font-medium text-gray-900">Welcome back!</p>
+                  <p className="text-xs text-gray-500">Manage your account</p>
+                </div>
+                <DropdownMenuItem onClick={() => handleNavigation('profile')} className="flex items-center space-x-3 px-4 py-3 rounded-lg mx-2 my-1 hover:bg-gray-50 transition-all duration-200">
+                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <User className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <span className="font-medium">Profile</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleNavigation('settings')}>
-                  <Settings className="h-4 w-4 mr-2" />
-                  Settings
+                <DropdownMenuItem onClick={() => handleNavigation('settings')} className="flex items-center space-x-3 px-4 py-3 rounded-lg mx-2 my-1 hover:bg-gray-50 transition-all duration-200">
+                  <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <Settings className="h-4 w-4 text-gray-600" />
+                  </div>
+                  <span className="font-medium">Settings</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => { logout(); onLogout && onLogout(); }} className="text-red-600">
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Logout
+                <div className="border-t border-gray-100 my-2"></div>
+                <DropdownMenuItem onClick={() => { logout(); onLogout && onLogout(); }} className="flex items-center space-x-3 px-4 py-3 rounded-lg mx-2 my-1 text-red-600 hover:bg-red-50 transition-all duration-200">
+                  <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                    <LogOut className="h-4 w-4 text-red-600" />
+                  </div>
+                  <span className="font-medium">Logout</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -185,46 +214,59 @@ const Navbar: React.FC<NavbarProps> = ({ currentSection, onNavigate, onLogout })
 
         {/* Mobile Navigation Menu */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden border-t border-gray-200 py-4 bg-white">
-            <div className="grid grid-cols-2 gap-2 sm:gap-3">
+          <div className="lg:hidden border-t border-gray-200/50 py-6 bg-white/95 backdrop-blur-md animate-fadeInDown">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               {navItems.map((item) => (
                 <Button
                   key={item.id}
                   variant={currentSection === item.id ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => handleNavigation(item.id)}
-                  className={`flex items-center justify-center space-x-2 w-full h-12 sm:h-14 touch-manipulation ${
+                  className={`flex items-center justify-center space-x-2 w-full h-16 sm:h-18 touch-manipulation rounded-xl transition-all duration-200 transform hover:scale-105 ${
                     currentSection === item.id
-                      ? 'bg-green-600 text-white shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 active:bg-gray-200'
+                      ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/80 active:bg-gray-200 border border-gray-200'
                   }`}
                 >
-                  <item.icon className="h-4 w-4 flex-shrink-0" />
-                  <span className="text-xs sm:text-sm font-medium truncate">{item.label}</span>
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                    currentSection === item.id ? 'bg-white/20' : 'bg-gray-100'
+                  }`}>
+                    <item.icon className="h-4 w-4 flex-shrink-0" />
+                  </div>
+                  <div className="text-center">
+                    <div className="text-xs sm:text-sm font-medium truncate">{item.label}</div>
+                    {currentSection === item.id && (
+                      <div className="w-2 h-2 bg-white rounded-full mx-auto mt-1 animate-pulse"></div>
+                    )}
+                  </div>
                 </Button>
               ))}
             </div>
             
             {/* Mobile Profile Actions */}
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <div className="flex flex-col space-y-2">
+            <div className="mt-6 pt-6 border-t border-gray-200/50">
+              <div className="flex flex-col space-y-3">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => handleNavigation('profile')}
-                  className="w-full justify-start h-10 touch-manipulation"
+                  className="w-full justify-start h-12 touch-manipulation rounded-xl hover:bg-gray-100/80 transition-all duration-200"
                 >
-                  <User className="h-4 w-4 mr-2" />
-                  Profile
+                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                    <User className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <span className="font-medium">Profile</span>
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => { logout(); onLogout && onLogout(); }}
-                  className="w-full justify-start h-10 text-red-600 hover:text-red-700 hover:bg-red-50 touch-manipulation"
+                  className="w-full justify-start h-12 text-red-600 hover:text-red-700 hover:bg-red-50 touch-manipulation rounded-xl transition-all duration-200"
                 >
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Logout
+                  <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center mr-3">
+                    <LogOut className="h-4 w-4 text-red-600" />
+                  </div>
+                  <span className="font-medium">Logout</span>
                 </Button>
               </div>
             </div>
